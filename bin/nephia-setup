@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Nephia::Setup;
+use Getopt::Long;
+
+my $appname = shift @ARGV || '';
+help() unless $appname =~ /^\w+/;
+
+my $flavor = 'Default';
+
+GetOptions(
+    "flavor=s" => \$flavor,
+);
+
+my $setup = Nephia::Setup->new(
+    flavor => $flavor,
+    appname => $appname,
+);
+$setup->create;
+
+sub help {
+    print <<EOF;
+Usage: 
+nephia-setup AppName [--flavor Flavor::Name]
+EOF
+    exit;
+}
