@@ -29,9 +29,6 @@ lib/Nephia/View.pm
 lib/Nephia/View/Xslate.pm
 Makefile.PL
 MANIFEST			This list of files
-META.yml
-MYMETA.json
-MYMETA.yml
 README
 README.pod
 t/00_compile.t
@@ -41,6 +38,7 @@ t/13_direct_response.t
 t/14_validate.t
 t/15_config.t
 t/16_using_multibyte.t
+t/17_opt_methods.t
 t/nephia-test_app/app.psgi
 t/nephia-test_app/lib/Nephia/TestApp.pm
 t/nephia-test_app/Makefile.PL

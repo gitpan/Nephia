@@ -13,7 +13,7 @@ sub new {
     my ( $class, %opts ) = @_;
 
     my $appname = $opts{appname}; $appname =~ s/::/-/g;
-    $opts{approot} = dir( File::Spec->catfile( getcwd(), $appname ) );
+    $opts{approot} = dir( File::Spec->catfile( '.', $appname ) );
 
     $opts{pmpath} = file( File::Spec->catfile( $opts{approot}->stringify, 'lib', split(/::/, $opts{appname}. '.pm') ) );
 
@@ -26,30 +26,47 @@ sub create {
     $self->approot->mkpath( 1, 0755 );
     map {
         $self->approot->subdir($_)->mkpath( 1, 0755 );
-    } qw( lib etc view root root/static t );
+    } qw( lib etc etc/conf view root root/static t );
 
     $self->psgi_file;
-
-
     $self->app_class_file;
     $self->index_template_file;
     $self->css_file;
     $self->makefile;
     $self->basic_test_file;
+    $self->config_file;
+}
+
+sub nephia_version {
+    my $self = shift;
+    return $self->{nephia_version} ? $self->{nephia_version} : do {
+        require Nephia;
+        $Nephia::VERSION;
+    };
+}
+
+sub templates {
+    my $self = shift;
+    unless ( $self->{templates} ) {
+        my @data = <DATA>;
+        $self->{templates} = +{ 
+            map { 
+                my ($key, $template) = split("---", $_, 2); 
+                $key =~ s/(\s|\r|\n)//g;
+                $template =~ s/^\n//;
+                ($key, $template);
+            } 
+            split("===", join('', @data) )
+        };
+    }
+    return $self->{templates} ;
 }
 
 sub psgi_file {
     my $self = shift;
     my $appname = $self->appname;
-    my $body = <<EOF;
-use strict;
-use warnings;
-use FindBin;
-
-use lib ("\$FindBin::Bin/lib", "\$FindBin::Bin/extlib/lib/perl5");
-use $appname;
-$appname->run;
-EOF
+    my $body = $self->templates->{psgi_file};
+    $body =~ s[\$appname][$appname]g;
     $self->approot->file('app.psgi')->spew( $body );
 }
 
@@ -57,19 +74,99 @@ sub app_class_file {
     my $self = shift;
     my $approot = $self->approot;
     my $appname = $self->appname;
-    my $body = <<EOF;
+    my $body = $self->templates->{app_class_file};
+    $body =~ s[\$approot][$approot]g;
+    $body =~ s[\$appname][$appname]g;
+    $self->pmpath->dir->mkpath( 1, 0755 );
+    $self->pmpath->spew( $body );
+}
+
+sub index_template_file {
+    my $self = shift;
+    my $body = $self->templates->{index_template_file};
+    $self->approot->file('view', 'index.tx')->spew( $body );
+}
+
+sub css_file {
+    my $self = shift;
+    my $body = $self->templates->{css_file};
+    $self->approot->file('root', 'static', 'style.css')->spew( $body );
+}
+
+sub makefile {
+    my $self = shift;
+    my $appname = $self->appname;
+    $appname =~ s[::][-]g;
+    my $pmpath = $self->pmpath;
+    $pmpath =~ s[$appname][.];
+    my $version = $self->nephia_version;
+    my $body = $self->templates->{makefile};
+    $body =~ s[\$appname][$appname]g;
+    $body =~ s[\$pmpath][$pmpath]g;
+    $body =~ s[\$NEPHIA_VERSION][$version]g;
+    $self->approot->file('Makefile.PL')->spew( $body );
+}
+
+sub basic_test_file {
+    my $self = shift;
+    my $appname = $self->appname;
+    my $body = $self->templates->{basic_test_file};
+    $body =~ s[\$appname][$appname]g;
+    $self->approot->file('t','001_basic.t')->spew( $body );
+}
+
+sub config_file {
+    my $self = shift;
+    my $appname = $self->appname;
+    $appname =~ s[::][-]g;
+    my $common = $self->templates->{common_conf};
+    $common =~ s[\$appname][$appname]g;
+    my $common_conf = $self->approot->file('etc','conf','common.pl');
+    my $common_conf_path = $common_conf->stringify;
+    $common_conf_path =~ s[^$appname][.];
+    $common_conf->spew( $common );
+    for my $envname (qw( development staging production )) {
+        my $body = $self->templates->{conf_file};
+        $body =~ s[\$common_conf_path][$common_conf_path]g;
+        $body =~ s[\$envname][$envname]g;
+        $self->approot->file('etc','conf',$envname.'.pl')->spew( $body );
+    }
+}
+
+1;
+
+__DATA__
+
+psgi_file
+---
+use strict;
+use warnings;
+use FindBin;
+use File::Spec;
+use File::Basename 'dirname';
+
+use lib ("$FindBin::Bin/lib", "$FindBin::Bin/extlib/lib/perl5");
+use $appname;
+my $basedir = dirname(__FILE__);
+my $config_name = $ENV{PLACK_ENV} || 'development';
+$appname->run( do(File::Spec->catfile($basedir, 'etc', 'conf', $config_name.'.pl')) );
+===
+
+app_class_file
+---
 package $appname;
 use strict;
 use warnings;
 use Nephia;
 
-our \$VERSION = 0.01;
+our $VERSION = 0.01;
 
 path '/' => sub {
-    my \$req = shift;
+    my $req = shift;
     return {
         template => 'index.tx',
-        title => '$appname',
+        title    => config->{appname},
+        envname  => config->{envname},
     };
 };
 
@@ -82,7 +179,7 @@ $appname - Web Application
 
 =head1 SYNOPSIS
 
-  \$ plackup
+  $ plackup
 
 =head1 DESCRIPTION
 
@@ -102,36 +199,29 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-EOF
-    $self->pmpath->dir->mkpath( 1, 0755 );
-    $self->pmpath->spew( $body );
-}
 
-sub index_template_file {
-    my $self = shift;
-    my $body = <<EOF;
+===
+
+index_template_file
+---
 <html>
 <head>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="shortcut icon" href="/static/favicon.ico" />
-  <title><: \$title :> - powerd by Nephia</title>
+  <title><: $title :> - powerd by Nephia</title>
 </head>
 <body>
   <div class="title">
-    <h1><: \$title :></h1>
+    <h1><: $title :></h1>
+    <p><: $envname :></p>
   </div>
   <address class="generated-by">Generated by Nephia</address>
 </body>
 </html>
-EOF
-    $self->approot->file('view', 'index.tx')->spew( $body );
-}
+===
 
-sub css_file {
-    my $self = shift;
-    my $body = <<EOF;
+css_file
+---
 body {
     background: #45484d; /* Old browsers */
     background: -moz-linear-gradient(top,  #45484d 0%, #000000 100%); /* FF3.6+ */
@@ -172,33 +262,40 @@ address.generated-by {
     text-align: right;
     font-style: normal;
 }
+===
 
-EOF
-    $self->approot->file('root', 'static', 'style.css')->spew( $body );
-}
+makefile
+---
+use strict;
+use warnings FATAL => 'all';
+use ExtUtils::MakeMaker;
 
-sub makefile {
-    my $self = shift;
-    my $apppath = $self->pmpath->stringify;
-    my $body = <<EOF;
-use inc::Module::Install;
-all_from '$apppath';
+WriteMakefile(
+    NAME             => '$appname',
+    AUTHOR           => q{clever guy <who@example.com>},
+    VERSION_FROM     => '$pmpath',
+    ABSTRACT_FROM    => '$pmpath',
+    LICENSE          => 'Artistic_2_0',
+    PL_FILES         => {},
+    MIN_PERL_VERSION => 5.008,
+    CONFIGURE_REQUIRES => {
+        'ExtUtils::MakeMaker' => 0,
+    },
+    BUILD_REQUIRES => {
+        'Test::More' => 0,
+    },
+    PREREQ_PM => {
+        'Nephia' => '$NEPHIA_VERSION',
+    },
+    dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+    clean => { FILES => '$appname-*' },
+);
 
-requires 'Nephia' => 0.01;
 
-tests 't/*.t';
+===
 
-test_requires 'Test::More';
-
-WriteAll;
-EOF
-    $self->approot->file('Makefile.PL')->spew( $body );
-}
-
-sub basic_test_file {
-    my $self = shift;
-    my $appname = $self->appname;
-    my $body = <<EOF;
+basic_test_file
+---
 use strict;
 use warnings;
 use Test::More;
@@ -206,8 +303,25 @@ BEGIN {
     use_ok( '$appname' );
 }
 done_testing;
-EOF
-    $self->approot->file('t','001_basic.t')->spew( $body );
-}
+===
 
-1;
+common_conf
+---
+### common config
+(
+    appname => '$appname',
+);
+===
+
+conf_file
+---
+### environment specific config
+use File::Spec;
+use File::Basename 'dirname';
+my $basedir = File::Spec->rel2abs(
+    File::Spec->catdir( dirname(__FILE__), '..', '..' )
+);
+(
+    ( do(File::Spec->catfile($basedir, 'etc', 'conf', 'common.pl')) ),
+    envname => '$envname',
+);

@@ -9,6 +9,8 @@ our $VERSION = 0.01;
 
 enum 'Sex' => qw( male female shemale );
 
+my $item = 'ひのきのぼう';
+
 path '/' => sub {
     return {
         template => 'index.tx',
@@ -31,6 +33,14 @@ path '/direct/js' => sub {
     };
 };
 
+path '/direct/array' => sub {
+    res { ( 200, [], ['foobar'] ) };
+};
+
+path '/direct/status_code' => sub {
+    res { 302 };
+};
+
 path '/validate' => sub {
     return validate 
         name => { isa => 'Str' },
@@ -47,6 +57,37 @@ path '/nihongo' => sub {
     return {
         template => 'index.tx',
         title => '日本語であそぼ',
+    };
+};
+
+get '/item' => sub {
+    return {
+        message => "$item　が　ある。",
+    };
+};
+
+post '/item' => sub {
+    return {
+        message => "$item　で　かべをたたいた",
+    };
+};
+
+put '/item' => sub {
+    return {
+        message => "$item　を　もどした",
+    };
+};
+
+del '/item' => sub {
+    return {
+        message => "$item　を　すてた",
+    };
+};
+
+post '/item/{newitem:.+}' => sub {
+    $item = param()->{'newitem'};
+    return {
+        message => "$item　を　つかう",
     };
 };
 

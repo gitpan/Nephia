@@ -6,44 +6,75 @@ use Exporter 'import';
 use Plack::Request;
 use Plack::Response;
 use Plack::Builder;
-use Plack::App::URLMap;
+use Router::Simple;
 use Nephia::View;
 use JSON ();
 use FindBin;
 use Data::Validator;
 use Encode;
 
-our $VERSION = '0.01';
-our @EXPORT = qw[ path req res run validate config ];
-our $MAPPER = Plack::App::URLMap->new;
+our $VERSION = '0.04';
+our @EXPORT = qw[ get post put del path req res param run validate config app ];
+our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
 our $CHARSET = 'UTF-8';
 
-sub path ($&) {
-    my ( $path, $code ) = @_;
-
+sub _path {
+    my ( $path, $code, $methods ) = @_;
     my $caller = caller();
-    $MAPPER->map( $path => sub {
-        my $env = shift;
-        my $req = Plack::Request->new( $env );
-        no strict qw[ refs subs ];
-        no warnings qw[ redefine ];
-        local *{$caller."::req"} = sub{ $req };
-        my $res = $code->( $req );
-        if ( ref $res eq 'HASH' ) {
-            return eval { $res->{template} } ? 
-                render( $res ) : 
-                json_res( $res )
-            ;
-        }
-        elsif ( ref $res eq 'Plack::Response' ) {
-            return $res->finalize;
-        }
-        else {
-            return $res;
-        }
-    } );
+    $MAPPER->connect(
+        $path, 
+        {
+            action => sub {
+                my $req = Plack::Request->new( shift );
+                my $param = shift;
+                no strict qw[ refs subs ];
+                no warnings qw[ redefine ];
+                local *{$caller."::req"} = sub{ $req };
+                local *{$caller."::param"} = sub{ $param };
+                my $res = $code->( $req, $param );
+                if ( ref $res eq 'HASH' ) {
+                    return eval { $res->{template} } ? 
+                        render( $res ) : 
+                        json_res( $res )
+                    ;
+                }
+                elsif ( ref $res eq 'Plack::Response' ) {
+                    return $res->finalize;
+                }
+                else {
+                    return $res;
+                }
+            },
+        },
+        $methods ? { method => $methods } : undef,
+    );
+}
+
+sub get ($&) {
+    my ( $path, $code ) = @_;
+    _path( $path, $code, ['GET'] );
+}
+
+sub post ($&) {
+    my ( $path, $code ) = @_;
+    _path( $path, $code, ['POST'] );
+}
+
+sub put ($&) {
+    my ( $path, $code ) = @_;
+    _path( $path, $code, ['PUT'] );
+}
+
+sub del ($&) {
+    my ( $path, $code ) = @_;
+    _path( $path, $code, ['DELETE'] );
+}
+
+sub path ($@) {
+    my ( $path, $code, $methods ) = @_;
+    _path( $path, $code, $methods );
 }
 
 sub res (&) {
@@ -57,14 +88,20 @@ sub res (&) {
         map { 
             my $method = $_;
             *{$caller.'::'.$method} = sub (@) { 
-                return $res->$method( @_ );
+                $res->$method( @_ );
+                return;
             };
         } qw[ 
             status headers body header
             content_type content_length
             content_encoding redirect cookies
         ];
-        $code->();
+        my @rtn = ( $code->() );
+        if ( @rtn ) {
+            $rtn[1] ||= [];
+            $rtn[2] ||= [];
+            $res = [@rtn];
+        }
     }
     return $res;
 }
@@ -76,7 +113,20 @@ sub run {
     return builder { 
         enable "ContentLength";
         enable "Static", root => "$FindBin::Bin/root/", path => qr{^/static/};
-        $MAPPER->to_app;
+        $class->app;
+    };
+}
+
+sub app {
+    my $class = shift;
+    return sub {
+        my $env = shift;
+        if ( my $p = $MAPPER->match($env) ) {
+            $p->{action}->($env, $p);
+        }
+        else {
+            [404, [], ['Not Found']];
+        }
     };
 }
 
@@ -121,6 +171,8 @@ sub config (@) {
 
 1;
 __END__
+
+=encoding utf8
 
 =head1 NAME
 
@@ -191,7 +243,7 @@ If you use multibyte-string in response, please remember 'use utf8;' and, you ma
 
 If you not specified 'charset', it will be 'UTF-8'.
 
-=head2 Makes any response - Using "res" function
+=head2 Makes response - Using "res" function
 
   path '/my-javascript' => sub {
       return res {
@@ -201,6 +253,38 @@ If you not specified 'charset', it will be 'UTF-8'.
   };
 
 "res" function returns Plack::Response object with customisable DSL-like syntax.
+
+You may specify coderef that's passed to res() returns some value. These values are passed into arrayref that is as plack response.
+
+  path '/some/path' => sub {
+      res { ( 200, ['text/html; charset=utf8'], ['Wooootheee!!!'] ) };
+  };
+
+And, you can write like following.
+
+  path '/cond/sample' => sub {
+      return res { 404 } unless req->param('q');
+      return { ( 200, [], ['you say '. req->param('q')] ) };
+  };
+
+=head2 Limitation by request method - Using (get|post|put|del) function
+
+  ### catch request that contains get-method
+  get '/foo' => sub { ... };
+  
+  ### post-method is following too.
+  post '/bar' => sub { ... };
+  
+  ### put-method and delete-method are too.
+  put '/baz' => sub { ... };
+  del '/hoge' => sub { ... };
+
+=head2 How to use routing with Router::Simple style matching-pattern and capture it - Using param function
+
+  post '/item/{id:[0-9]+}' => sub {
+      my $item_id = param->{id}; # get param named "id" from path
+      ...
+  };
 
 =head1 USING CONFIG
 
@@ -251,6 +335,10 @@ See documentation of validate method and Data::Validator.
 
 Mount controller on specified path.
 
+=head2 get post put del
+
+Usage equal as path(). But these functions specifies limitation for HTTP request-method.
+
 =head2 req
 
 Return Plack::Request object. You can call this function in coderef that is argument of path().
@@ -258,6 +346,10 @@ Return Plack::Request object. You can call this function in coderef that is argu
 =head2 res $coderef
 
 Return Plack::Response object with customisable DSL-like syntax.
+
+=head2 param
+
+Return parameters that contains in path as hashref. 
 
 =head2 config
 

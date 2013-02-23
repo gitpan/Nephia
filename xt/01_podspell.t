@@ -21,3 +21,14 @@ UTF
 nephia
 psgi
 utf
+del
+param
+plack
+appname
+conf
+dirname
+envname
+gz
+powerd
+px
+

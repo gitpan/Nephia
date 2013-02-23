@@ -21,6 +21,17 @@ test_psgi
             is $res->content_length, 22;
             is $res->content, 'console.log("foobar");';
         };
+
+        subtest "res by array" => sub {
+            my $res = $cb->(GET "/direct/array");
+            is $res->code, 200;
+            is $res->content, 'foobar';
+        };
+
+        subtest "status_code only" => sub {
+            my $res = $cb->(GET "/direct/status_code");
+            is $res->code, 302;
+        };
     }
 ;
 

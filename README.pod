@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 Nephia - Mini WAF
@@ -67,7 +69,7 @@ If you use multibyte-string in response, please remember 'use utf8;' and, you ma
 
 If you not specified 'charset', it will be 'UTF-8'.
 
-=head2 Makes any response - Using "res" function
+=head2 Makes response - Using "res" function
 
   path '/my-javascript' => sub {
       return res {
@@ -77,6 +79,38 @@ If you not specified 'charset', it will be 'UTF-8'.
   };
 
 "res" function returns Plack::Response object with customisable DSL-like syntax.
+
+You may specify coderef that's passed to res() returns some value. These values are passed into arrayref that is as plack response.
+
+  path '/some/path' => sub {
+      res { ( 200, ['text/html; charset=utf8'], ['Wooootheee!!!'] ) };
+  };
+
+And, you can write like following.
+
+  path '/cond/sample' => sub {
+      return res { 404 } unless req->param('q');
+      return { ( 200, [], ['you say '. req->param('q')] ) };
+  };
+
+=head2 Limitation by request method - Using (get|post|put|del) function
+
+  ### catch request that contains get-method
+  get '/foo' => sub { ... };
+  
+  ### post-method is following too.
+  post '/bar' => sub { ... };
+  
+  ### put-method and delete-method are too.
+  put '/baz' => sub { ... };
+  del '/hoge' => sub { ... };
+
+=head2 How to use routing with Router::Simple style matching-pattern and capture it - Using param function
+
+  post '/item/{id:[0-9]+}' => sub {
+      my $item_id = param->{id}; # get param named "id" from path
+      ...
+  };
 
 =head1 USING CONFIG
 
@@ -127,6 +161,10 @@ See documentation of validate method and Data::Validator.
 
 Mount controller on specified path.
 
+=head2 get post put del
+
+Usage equal as path(). But these functions specifies limitation for HTTP request-method.
+
 =head2 req
 
 Return Plack::Request object. You can call this function in coderef that is argument of path().
@@ -134,6 +172,10 @@ Return Plack::Request object. You can call this function in coderef that is argu
 =head2 res $coderef
 
 Return Plack::Response object with customisable DSL-like syntax.
+
+=head2 param
+
+Return parameters that contains in path as hashref. 
 
 =head2 config
 
