@@ -20,7 +20,7 @@ test_psgi
             is $res->content_type, 'application/json';
             is $res->content_length, 44;
             my $json = JSON->new->utf8->decode( $res->content );
-            is_deeply $json, { test_config() };
+            is_deeply $json, test_config();
         };
     }
 ;

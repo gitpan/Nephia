@@ -13,7 +13,7 @@ use FindBin;
 use Data::Validator;
 use Encode;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 our @EXPORT = qw[ get post put del path req res param run validate config app ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
@@ -107,9 +107,9 @@ sub res (&) {
 }
 
 sub run {
-    my ( $class, %options ) = @_;
-    $CONFIG = { %options };
-    $VIEW = Nephia::View->new( %{$options{view}} );
+    my $class = shift;
+    $CONFIG = scalar @_ > 1 ? +{ @_ } : $_[0];
+    $VIEW = Nephia::View->new( $CONFIG->{view} ? %{$CONFIG->{view}} : () );
     return builder { 
         enable "ContentLength";
         enable "Static", root => "$FindBin::Bin/root/", path => qr{^/static/};
@@ -362,6 +362,8 @@ Return validated parameters as hashref. You have to set validation rule as like 
 =head1 AUTHOR
 
 ytnobody E<lt>ytnobody@gmail.comE<gt>
+
+ichigotake
 
 =head1 SEE ALSO
 
