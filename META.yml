@@ -1,0 +1,65 @@
+---
+abstract: 'Mini WAF'
+author:
+  - 'ytnobody <ytnobody@gmail.com>'
+build_requires:
+  ExtUtils::MakeMaker: 6.36
+  Mouse::Util::TypeConstraints: 0
+  Test::More: 0
+configure_requires:
+  CPAN::Meta: 0
+  CPAN::Meta::Prereqs: 0
+  Module::Build: 0.38
+dynamic_config: 0
+generated_by: 'Minilla/v0.4.2, CPAN::Meta::Converter version 2.130880'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Nephia
+no_index:
+  directory:
+    - t
+    - xt
+    - inc
+    - share
+    - eg
+    - examples
+    - author
+provides:
+  Nephia:
+    file: lib/Nephia.pm
+    version: 0.06
+  Nephia::Setup:
+    file: lib/Nephia/Setup.pm
+  Nephia::Setup::Base:
+    file: lib/Nephia/Setup/Base.pm
+  Nephia::Setup::Default:
+    file: lib/Nephia/Setup/Default.pm
+  Nephia::View:
+    file: lib/Nephia/View.pm
+  Nephia::View::Xslate:
+    file: lib/Nephia/View/Xslate.pm
+requires:
+  Class::Accessor::Fast: 0
+  Class::Accessor::Lite: 0
+  Class::Load: 0
+  Config::Micro: 0
+  Cwd: 0
+  Data::Validator: 0
+  Encode: 0
+  Exporter: 0
+  File::Basename: 0
+  File::Spec: 0
+  JSON: 0
+  Path::Class: 0.26
+  Plack: 0
+  Router::Simple: 0
+  Text::Xslate: 0
+resources:
+  bugtracker: https://github.com/ytnobody/Nephia/issues
+  homepage: https://github.com/ytnobody/Nephia
+  repository: git://github.com/ytnobody/Nephia.git
+version: 0.06
+x_contributors:
+  - 'Takayuki Otake <k.wisiiy@gmail.com>'

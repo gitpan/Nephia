@@ -13,8 +13,8 @@ use FindBin;
 use Data::Validator;
 use Encode;
 
-our $VERSION = '0.05';
-our @EXPORT = qw[ get post put del path req res param run validate config app ];
+our $VERSION = '0.06';
+our @EXPORT = qw[ get post put del path req res param run validate config app nephia_plugins ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
@@ -168,6 +168,24 @@ sub config (@) {
     }
     return $CONFIG;
 };
+
+sub nephia_plugins (@) {
+    my $caller = caller();
+    for my $plugin ( map {'Nephia::Plugin::'.$_} @_ ) {
+        _export_plugin_functions($plugin, $caller);
+    }
+};
+
+sub _export_plugin_functions {
+    my ($plugin, $caller) = @_;
+    my $plugin_path = File::Spec->catfile(split('::', $plugin)).'.pm';
+    require $plugin_path;
+    {
+        no strict 'refs';
+        my @funcs = grep { $_ =~ /^[a-z]/ && $_ ne 'import' } keys %{$plugin.'::'};
+        *{$caller.'::'.$_} = *{$plugin.'::'.$_} for @funcs;
+    }
+}
 
 1;
 __END__
@@ -329,6 +347,48 @@ You may use validator with validate function.
 
 See documentation of validate method and Data::Validator.
 
+=head1 USING PLUGINS
+
+You may use plugins for Nephia, as like followings.
+
+  nephia_plugin 'Response::YAML', 'Response::XML';
+
+=head1 HOW TO DEVELOP Nephia PLUGIN
+
+The only rule, namespace of new module must begins in "Nephia::Plugin::".
+
+If you want to export subroutines, those name must begin in lower alphabetic chars, and it must not be "import".
+
+For example.
+
+  package Nephia::Plugin::Bark;
+  use Exporter 'import';
+  our @EXPORT = qw[ bark barkbark ];
+  
+  sub bark {
+      return [200, [], ['Bark!']];
+  }
+  
+  sub barkbark {
+      return [200, [], [join(' ', 'Bark', @_)]];
+  }
+  
+  1;
+
+You can use plugin in above, as like followings.
+
+  package Your::App;
+  use Nephia;
+  nephia_plugins 'Bark';
+  
+  path '/bark' => sub {
+      bark(); # 'Bark!'
+  };
+  
+  path '/barkbark' => sub {
+      barkbark('hoge', 'fuga'); # 'Bark hoge fuga'
+  };
+
 =head1 FUNCTIONS
 
 =head2 path $path, $coderef_as_controller;
@@ -358,6 +418,10 @@ Return config as hashref.
 =head2 validate %validation_rules
 
 Return validated parameters as hashref. You have to set validation rule as like as Data::Validator's instantiate arguments.
+
+=head2 nephia_plugins @plugins
+
+Load specified Nephia plugins.
 
 =head1 AUTHOR
 
