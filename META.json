@@ -68,7 +68,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.06"
+         "version" : "0.07"
       },
       "Nephia::Setup" : {
          "file" : "lib/Nephia/Setup.pm"
@@ -97,7 +97,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.06",
+   "version" : "0.07",
    "x_contributors" : [
       "Takayuki Otake <k.wisiiy@gmail.com>"
    ]

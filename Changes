@@ -1,30 +1,33 @@
 Revision history for Perl extension Nephia
 
+0.07 2013-05-18T08:05:12Z
+        - security fix for CVE-2013-1297
+        - fix Setup::Base more scalable
+
 0.06 2013-05-17T09:02:58Z
- 0.06   Fri May 17 18:01:43 JST 2013
         - add nephia_plugins function.
         - done minil migrate (see Minilla)
 
- 0.05   Tue Apr 23 22:46:33 JST 2013
+0.05   Tue Apr 23 22:46:33 JST 2013
         [Setup::Base] 
         - use Config::Micro for loading config
         - change config as hashref
         - change dependency for Class::Accessor::Fast to Class::Accessor::Lite (thx, ichigotake)
         - avoid indexing of POD in application template
 
- 0.04   Thu Feb 23 13:11:23 2013
+0.04   Thu Feb 23 13:11:23 2013
         - res() supports return values.
         - add config() function.
         - use EU::MM for makefile template.
         - add config file template.
 
- 0.03   Wed Jan 30 11:54:29 2013
+0.03   Wed Jan 30 11:54:29 2013
         - support param function.
 
- 0.02   Mon Jan 28 11:28:32 2013
+0.02   Mon Jan 28 11:28:32 2013
         - change mapper class from Plack::App::URLMap to Router::Simple.
         - support (get|post|put|del) function.
 
- 0.01   Wed Jul 18 08:18:52 2012
+0.01   Wed Jul 18 08:18:52 2012
         - original version
 

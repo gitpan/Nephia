@@ -7,7 +7,7 @@ use Cwd;
 use Carp;
 use Class::Accessor::Lite (
     new => 0,
-    rw => [qw( appname approot pmpath )],
+    rw => [qw( appname approot pmpath templates )],
 );
 
 sub new {
@@ -17,8 +17,33 @@ sub new {
     $opts{approot} = dir( File::Spec->catfile( '.', $appname ) );
 
     $opts{pmpath} = file( File::Spec->catfile( $opts{approot}->stringify, 'lib', split(/::/, $opts{appname}. '.pm') ) );
+    my @template_data = ();
+    {
+        no strict 'refs';
+        my $dh = *{'Nephia::Setup::Base::DATA'}{IO};
+        push @template_data, (<$dh>);
+        if ($class ne 'Nephia::Setup::Default' ) {
+            my $_dh = *{$class.'::DATA'}{IO};
+            push @template_data, (<$_dh>);
+        }
+    }
+    $opts{templates} = _parse_template_data( @template_data );
 
     return bless { %opts }, $class;
+}
+
+sub _parse_template_data {
+    my @data = @_;
+    return +{
+        map { 
+            my ($key, $template) = split("---", $_, 2); 
+            $key =~ s/(\s|\r|\n)//g;
+            $template =~ s/^\n//;
+            ($key, $template);
+        } 
+        grep { $_ =~ /---/ }
+        split("===", join('', @data) )
+    };
 }
 
 sub create {
@@ -44,23 +69,6 @@ sub nephia_version {
         require Nephia;
         $Nephia::VERSION;
     };
-}
-
-sub templates {
-    my $self = shift;
-    unless ( $self->{templates} ) {
-        my @data = <DATA>;
-        $self->{templates} = +{ 
-            map { 
-                my ($key, $template) = split("---", $_, 2); 
-                $key =~ s/(\s|\r|\n)//g;
-                $template =~ s/^\n//;
-                ($key, $template);
-            } 
-            split("===", join('', @data) )
-        };
-    }
-    return $self->{templates} ;
 }
 
 sub psgi_file {
@@ -182,7 +190,6 @@ path '/data' => sub {
 };
 
 1;
-__END__
 
 :::head1 NAME
 
@@ -384,3 +391,4 @@ my $basedir = File::Spec->rel2abs(
     %{ do(File::Spec->catfile($basedir, 'etc', 'conf', 'common.pl')) },
     envname => '$envname',
 };
+===

@@ -13,7 +13,7 @@ use FindBin;
 use Data::Validator;
 use Encode;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 our @EXPORT = qw[ get post put del path req res param run validate config app nephia_plugins ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
@@ -134,7 +134,10 @@ sub json_res {
     my $res = shift;
     my $body = JSON->new->utf8->encode( $res );
     return [ 200, 
-        [ 'Content-type' => 'application/json' ],
+        [ 
+            'Content-type'           => 'application/json',
+            'X-Content-Type-Options' => 'nosniff',  ### For IE 9 or later. See http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2013-1297
+        ],
         [ $body ]
     ];
 }
