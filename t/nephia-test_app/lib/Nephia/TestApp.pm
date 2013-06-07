@@ -2,14 +2,11 @@ package Nephia::TestApp;
 use strict;
 use warnings;
 use Nephia;
-use Mouse::Util::TypeConstraints;
 use utf8;
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 nephia_plugins 'Bark';
-
-enum 'Sex' => qw( male female shemale );
 
 my $item = 'ひのきのぼう';
 
@@ -41,14 +38,6 @@ path '/direct/array' => sub {
 
 path '/direct/status_code' => sub {
     res { 302 };
-};
-
-path '/validate' => sub {
-    return validate 
-        name => { isa => 'Str' },
-        age => { isa => 'Int', default => 72 },
-        sex => { isa => 'Sex', default => 'shemale'}
-    ;
 };
 
 path '/configtest' => sub {

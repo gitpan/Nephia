@@ -22,7 +22,6 @@ t/00_compile.t
 t/11_return_json.t
 t/12_using_template.t
 t/13_direct_response.t
-t/14_validate.t
 t/15_config.t
 t/16_using_multibyte.t
 t/17_opt_methods.t

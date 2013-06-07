@@ -93,6 +93,20 @@ And, you can write like following.
         return { ( 200, [], ['you say '. req->param('q')] ) };
     };
 
+Commands supported in "res" function are following.
+
+- status 
+- headers 
+- header
+- body 
+- content\_type
+- content\_length
+- content\_encoding
+- redirect
+- cookies
+
+Please see Plack::Response's documentation for more detail.
+
 ## Limitation by request method - Using (get|post|put|del) function
 
     ### catch request that contains get-method
@@ -144,19 +158,6 @@ And, you can access to these config in your application as following.
 # STATIC CONTENTS ( like as images, javascripts... )
 
 You can look static-files that is into root directory via HTTP.
-
-# VALIDATE PARAMETERS
-
-You may use validator with validate function.
-
-    path '/some/path' => sub {
-        my $params = validate
-            name => { isa => 'Str', default => 'Nameless John' },
-            age => { isa => 'Int' }
-        ;
-    };
-
-See documentation of validate method and Data::Validator.
 
 # USING PLUGINS
 
@@ -231,10 +232,6 @@ Return parameters that contains in path as hashref.
 
 Return config as hashref.
 
-## validate %validation\_rules
-
-Return validated parameters as hashref. You have to set validation rule as like as Data::Validator's instantiate arguments.
-
 ## nephia\_plugins @plugins
 
 Load specified Nephia plugins.
@@ -258,8 +255,6 @@ Text::Xslate
 Text::Xslate::Syntax::Kolon
 
 JSON
-
-Data::Validator
 
 # LICENSE
 

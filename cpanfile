@@ -3,7 +3,6 @@ requires 'Class::Accessor::Lite';
 requires 'Class::Load';
 requires 'Config::Micro';
 requires 'Cwd';
-requires 'Data::Validator';
 requires 'Encode';
 requires 'Exporter';
 requires 'File::Basename';

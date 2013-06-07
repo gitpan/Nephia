@@ -29,7 +29,7 @@ no_index:
 provides:
   Nephia:
     file: lib/Nephia.pm
-    version: 0.07
+    version: 0.08
   Nephia::Setup:
     file: lib/Nephia/Setup.pm
   Nephia::Setup::Base:
@@ -46,7 +46,6 @@ requires:
   Class::Load: 0
   Config::Micro: 0
   Cwd: 0
-  Data::Validator: 0
   Encode: 0
   Exporter: 0
   File::Basename: 0
@@ -60,6 +59,6 @@ resources:
   bugtracker: https://github.com/ytnobody/Nephia/issues
   homepage: https://github.com/ytnobody/Nephia
   repository: git://github.com/ytnobody/Nephia.git
-version: 0.07
+version: 0.08
 x_contributors:
   - 'Takayuki Otake <k.wisiiy@gmail.com>'

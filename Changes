@@ -1,5 +1,9 @@
 Revision history for Perl extension Nephia
 
+0.08 2013-06-07T01:41:12Z
+        - cut out validation feature into plugin (Nephia::Plugin::Data::Validator)
+        - add documentation for commands in res function
+
 0.07 2013-05-18T08:05:12Z
         - security fix for CVE-2013-1297
         - fix Setup::Base more scalable

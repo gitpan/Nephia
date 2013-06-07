@@ -10,11 +10,10 @@ use Router::Simple;
 use Nephia::View;
 use JSON ();
 use FindBin;
-use Data::Validator;
 use Encode;
 
-our $VERSION = '0.07';
-our @EXPORT = qw[ get post put del path req res param run validate config app nephia_plugins ];
+our $VERSION = '0.08';
+our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
@@ -137,6 +136,8 @@ sub json_res {
         [ 
             'Content-type'           => 'application/json',
             'X-Content-Type-Options' => 'nosniff',  ### For IE 9 or later. See http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2013-1297
+            'X-Frame-Options'        => 'DENY',     ### Suppress loading web-page into iframe. See http://blog.mozilla.org/security/2010/09/08/x-frame-options/
+            'Cache-Control'          => 'private',  ### no public cache
         ],
         [ $body ]
     ];
@@ -150,15 +151,6 @@ sub render {
         [ 'Content-type' => "text/html; charset=$charset" ],
         [ Encode::encode( $charset, $body ) ]
     ];
-}
-
-sub validate (%) {
-    my $caller = caller();
-    no strict qw[ refs subs ];
-    no warnings qw[ redefine ];
-    my $req = *{$caller.'::req'};
-    my $validator = Data::Validator->new(@_);
-    return $validator->validate( %{$req->()->parameters->as_hashref_mixed} );
 }
 
 sub config (@) {
@@ -288,6 +280,32 @@ And, you can write like following.
       return { ( 200, [], ['you say '. req->param('q')] ) };
   };
 
+Commands supported in "res" function are following.
+
+=over 4 
+
+=item status 
+
+=item headers 
+
+=item header
+
+=item body 
+
+=item content_type
+
+=item content_length
+
+=item content_encoding
+
+=item redirect
+
+=item cookies
+
+=back 
+
+Please see Plack::Response's documentation for more detail.
+
 =head2 Limitation by request method - Using (get|post|put|del) function
 
   ### catch request that contains get-method
@@ -336,19 +354,6 @@ And, you can access to these config in your application as following.
 =head1 STATIC CONTENTS ( like as images, javascripts... )
 
 You can look static-files that is into root directory via HTTP.
-
-=head1 VALIDATE PARAMETERS
-
-You may use validator with validate function.
-
-  path '/some/path' => sub {
-      my $params = validate
-          name => { isa => 'Str', default => 'Nameless John' },
-          age => { isa => 'Int' }
-      ;
-  };
-
-See documentation of validate method and Data::Validator.
 
 =head1 USING PLUGINS
 
@@ -418,10 +423,6 @@ Return parameters that contains in path as hashref.
 
 Return config as hashref.
 
-=head2 validate %validation_rules
-
-Return validated parameters as hashref. You have to set validation rule as like as Data::Validator's instantiate arguments.
-
 =head2 nephia_plugins @plugins
 
 Load specified Nephia plugins.
@@ -445,8 +446,6 @@ Text::Xslate
 Text::Xslate::Syntax::Kolon
 
 JSON
-
-Data::Validator
 
 =head1 LICENSE
 
