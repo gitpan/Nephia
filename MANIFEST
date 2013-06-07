@@ -11,14 +11,15 @@ eg/lib/MyApp/Foo.pm
 eg/lib/MyApp/Oreore.pm
 eg/lib/MyApp/Root.pm
 eg/view/hoge.tx
-inc/Mouse/Util/TypeConstraints.pm
 lib/Nephia.pm
+lib/Nephia/ClassLoader.pm
 lib/Nephia/Setup.pm
 lib/Nephia/Setup/Base.pm
 lib/Nephia/Setup/Default.pm
 lib/Nephia/View.pm
 lib/Nephia/View/Xslate.pm
 t/00_compile.t
+t/09_setup.t
 t/11_return_json.t
 t/12_using_template.t
 t/13_direct_response.t

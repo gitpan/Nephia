@@ -12,7 +12,7 @@ use JSON ();
 use FindBin;
 use Encode;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;

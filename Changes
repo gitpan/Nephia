@@ -1,5 +1,11 @@
 Revision history for Perl extension Nephia
 
+0.09 2013-06-07T15:57:16Z
+        - more quite design template and style
+        - stop using Class::Load. use Nephia::ClassLoader
+        - remove unrequired dependency (Mouse::Util::TypeConstraints, Class::Accesor::Fast)
+        - stop using Path::Class.
+
 0.08 2013-06-07T01:41:12Z
         - cut out validation feature into plugin (Nephia::Plugin::Data::Validator)
         - add documentation for commands in res function

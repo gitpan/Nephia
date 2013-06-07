@@ -2,7 +2,7 @@ package Nephia::Setup::Base;
 use strict;
 use warnings;
 use File::Spec;
-use Path::Class;
+use File::Basename 'dirname';
 use Cwd;
 use Carp;
 use Class::Accessor::Lite (
@@ -13,10 +13,11 @@ use Class::Accessor::Lite (
 sub new {
     my ( $class, %opts ) = @_;
 
-    my $appname = $opts{appname}; $appname =~ s/::/-/g;
-    $opts{approot} = dir( File::Spec->catfile( '.', $appname ) );
+    my $appname = $opts{appname}; 
+    $appname =~ s/::/-/g;
+    $opts{approot} = File::Spec->catdir('.', $appname);
 
-    $opts{pmpath} = file( File::Spec->catfile( $opts{approot}->stringify, 'lib', split(/::/, $opts{appname}. '.pm') ) );
+    $opts{pmpath} = File::Spec->catfile( $opts{approot}, 'lib', split(/::/, $opts{appname}. '.pm') );
     my @template_data = ();
     {
         no strict 'refs';
@@ -49,9 +50,10 @@ sub _parse_template_data {
 sub create {
     my $self = shift;
 
-    $self->approot->mkpath( 1, 0755 );
+    $self->mkpath($self->approot);
     map {
-        $self->approot->subdir($_)->mkpath( 1, 0755 );
+        my @path = split '/', $_;
+        $self->mkpath($self->approot, @path);
     } qw( lib etc etc/conf view root root/static t );
 
     $self->psgi_file;
@@ -63,12 +65,27 @@ sub create {
     $self->config_file;
 }
 
-sub nephia_version {
-    my $self = shift;
-    return $self->{nephia_version} ? $self->{nephia_version} : do {
-        require Nephia;
-        $Nephia::VERSION;
-    };
+sub spew {
+    my ($self, $file, $body) = @_;
+    print "spew into file $file\n";
+    open my $fh, '>', $file or croak "could not spew into $file: $!";
+    print $fh $body;
+    close $fh;
+}
+
+sub mkpath {
+    my ($self, @part) = @_;
+    my $path = File::Spec->catdir(@part);
+    unless (-d $path) {
+        print "create path $path\n";
+        mkdir $path, 0755 or croak "could not create path $path: $!";
+    }
+}
+
+sub dir {
+    my ($self, @part) = @_;
+    my $path = File::Spec->catfile(@part);
+    dirname($path);
 }
 
 sub psgi_file {
@@ -76,7 +93,8 @@ sub psgi_file {
     my $appname = $self->appname;
     my $body = $self->templates->{psgi_file};
     $body =~ s[\$appname][$appname]g;
-    $self->approot->file('app.psgi')->spew( $body );
+    my $file = File::Spec->catfile($self->approot, 'app.psgi');
+    $self->spew($file, $body);
 }
 
 sub app_class_file {
@@ -87,20 +105,23 @@ sub app_class_file {
     $body =~ s[\$approot][$approot]g;
     $body =~ s[\$appname][$appname]g;
     $body =~ s[:::][=]g;
-    $self->pmpath->dir->mkpath( 1, 0755 );
-    $self->pmpath->spew( $body );
+    my $dir = $self->dir($self->pmpath);
+    $self->mkpath($dir);
+    $self->spew($self->pmpath, $body);
 }
 
 sub index_template_file {
     my $self = shift;
     my $body = $self->templates->{index_template_file};
-    $self->approot->file('view', 'index.tx')->spew( $body );
+    my $file = File::Spec->catfile($self->approot, qw/view index.tx/);
+    $self->spew($file, $body);
 }
 
 sub css_file {
     my $self = shift;
     my $body = $self->templates->{css_file};
-    $self->approot->file('root', 'static', 'style.css')->spew( $body );
+    my $file = File::Spec->catfile($self->approot, qw/root static style.css/);
+    $self->spew($file, $body);
 }
 
 sub makefile {
@@ -109,12 +130,11 @@ sub makefile {
     $appname =~ s[::][-]g;
     my $pmpath = $self->pmpath;
     $pmpath =~ s[$appname][.];
-    my $version = $self->nephia_version;
     my $body = $self->templates->{makefile};
     $body =~ s[\$appname][$appname]g;
     $body =~ s[\$pmpath][$pmpath]g;
-    $body =~ s[\$NEPHIA_VERSION][$version]g;
-    $self->approot->file('Makefile.PL')->spew( $body );
+    my $file = File::Spec->catfile($self->approot, 'Makefile.PL');
+    $self->spew($file, $body);
 }
 
 sub basic_test_file {
@@ -122,7 +142,8 @@ sub basic_test_file {
     my $appname = $self->appname;
     my $body = $self->templates->{basic_test_file};
     $body =~ s[\$appname][$appname]g;
-    $self->approot->file('t','001_basic.t')->spew( $body );
+    my $file = File::Spec->catfile($self->approot, qw/t 001_basic.t/);
+    $self->spew($file, $body);
 }
 
 sub config_file {
@@ -131,15 +152,14 @@ sub config_file {
     $appname =~ s[::][-]g;
     my $common = $self->templates->{common_conf};
     $common =~ s[\$appname][$appname]g;
-    my $common_conf = $self->approot->file('etc','conf','common.pl');
-    my $common_conf_path = $common_conf->stringify;
-    $common_conf_path =~ s[^$appname][.];
-    $common_conf->spew( $common );
+    my $common_conf_path = File::Spec->catfile($self->approot, 'etc','conf','common.pl');
+    $self->spew($common_conf_path, $common);
     for my $envname (qw( development staging production )) {
         my $body = $self->templates->{conf_file};
         $body =~ s[\$common_conf_path][$common_conf_path]g;
         $body =~ s[\$envname][$envname]g;
-        $self->approot->file('etc','conf',$envname.'.pl')->spew( $body );
+        my $file = File::Spec->catfile($self->approot, 'etc', 'conf', $envname.'.pl');
+        $self->spew($file, $body);
     }
 }
 
@@ -230,8 +250,8 @@ index_template_file
 </head>
 <body>
   <div class="title">
-    <h1><: $title :></h1>
-    <p><: $envname :></p>
+    <span class="title-label"><: $title :></span>
+    <span class="envname"><: $envname :></span>
   </div>
 
   <div class="content">
@@ -245,19 +265,14 @@ index_template_file
     path '/data' => sub {
         my $req = shift;
 
-
         return { # responce-value as JSON unless exists {template}
             #template => 'index.tx',
             title    => config->{appname},
             envname  => config->{envname},
-        };  
+        };
     };
-
     </pre>
-  </div>
-
-  <div class="content">
-    And more...
+    <h2>See also</h2>
     <ul>
       <li><a href="https://metacpan.org/module/Nephia">Read the documentation</a></li>
     </ul>
@@ -266,56 +281,67 @@ index_template_file
   <address class="generated-by">Generated by Nephia</address>
 </body>
 </html>
+
 ===
 
 css_file
 ---
 body {
-    background: #45484d; /* Old browsers */
-    background: -moz-linear-gradient(top,  #45484d 0%, #000000 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#45484d), color-stop(100%,#000000)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  #45484d 0%,#000000 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  #45484d 0%,#000000 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  #45484d 0%,#000000 100%); /* IE10+ */
-    background: linear-gradient(to bottom,  #45484d 0%,#000000 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#45484d', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
-    color: #eed;
-    text-shadow: 3px 3px 3px #000;
+    text-align: center; 
+    background: #f7f7f7;
+    color: #666;
+    padding: 0px;
+    margin: 0px;
+    font-family: 'Hiragino Kaku Gothic ProN', Meiryo, 'MS PGothic', Sans-serif;
+}
+
+h1,h2,h3,h4,h5 {
+    color: #333;
+    border-left: 10px solid #36c;
+    font-weight: 100;
+    padding: 4px 7px;
+}
+
+a {
+    color: #36c;
 }
 
 div.title {
-    width: 80%;
-    margin: auto;
-    margin-top: 20px;
-    background: #ff5db1; /* Old browsers */
-    background: -moz-linear-gradient(top,  #ff5db1 0%, #ef017c 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ff5db1), color-stop(100%,#ef017c)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  #ff5db1 0%,#ef017c 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  #ff5db1 0%,#ef017c 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  #ff5db1 0%,#ef017c 100%); /* IE10+ */
-    background: linear-gradient(to bottom,  #ff5db1 0%,#ef017c 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff5db1', endColorstr='#ef017c',GradientType=0 ); /* IE6-9 */
-    padding: 10px 30px;
-    border-radius: 20px;
-    box-shadow: 7px 10px 30px #000;
-    color: #eed;
-    text-shadow: 3px 3px 3px #000;
+    text-align: justify;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    background-color: #36c;
+    border-bottom: 2px solid #fff;
+    color: #f7f7f7;
+}
+
+span.title-label {
+    font-weight: 100;
+    font-size: 1.4em;
+    margin: 0px 10px;
+}
+
+span.envname {
+    font-size: 0.8em;
 }
 
 div.content {
-    background-color: #666;
+    text-align: justify;
+    background-color: #fff;
     width: 80%;
     margin: 20px auto;
     padding: 10px 30px;
-    border-radius: 20px;
-    box-shadow: 7px 10px 30px #000;
+    border-radius: 4px;
+    border: 2px solid #eee;
 }
 
-pre,ul {
+pre {
     line-height: 1.2em;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    background-color: #ccc;
+    padding: 10px 2px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #eee;
     text-shadow:none;
     color: #111;
 }
@@ -328,6 +354,7 @@ address.generated-by {
     text-align: right;
     font-style: normal;
 }
+
 ===
 
 makefile
@@ -351,7 +378,7 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        'Nephia' => '$NEPHIA_VERSION',
+        'Nephia' => '0',
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => '$appname-*' },

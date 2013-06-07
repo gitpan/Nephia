@@ -4,7 +4,7 @@ use warnings;
 use Nephia;
 use utf8;
 
-our $VERSION = 0.08;
+our $VERSION = 0.09;
 
 nephia_plugins 'Bark';
 

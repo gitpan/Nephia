@@ -1,16 +1,16 @@
 package Nephia::Setup;
 use strict;
 use warnings;
-use Class::Load ':all';
+use Nephia::ClassLoader;
 
 sub new {
     my ( $class, %opts ) = @_;
     $opts{flavor} ||= 'Default';
 
-    my $klass = 'Nephia::Setup::'. delete $opts{flavor};
-    load_class( $klass );
+    my $subclass = 'Nephia::Setup::'. delete $opts{flavor};
+    Nephia::ClassLoader->load( $subclass );
 
-    return $klass->new( %opts );
+    return $subclass->new( %opts );
 }
 
 1;
