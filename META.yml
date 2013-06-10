@@ -9,7 +9,7 @@ configure_requires:
   CPAN::Meta::Prereqs: 0
   Module::Build: 0.38
 dynamic_config: 0
-generated_by: 'Minilla/v0.4.5, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Minilla/v0.4.9, CPAN::Meta::Converter version 2.120921'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -27,7 +27,7 @@ no_index:
 provides:
   Nephia:
     file: lib/Nephia.pm
-    version: 0.09
+    version: 0.10
   Nephia::ClassLoader:
     file: lib/Nephia/ClassLoader.pm
     version: 0
@@ -43,8 +43,8 @@ provides:
   Nephia::View:
     file: lib/Nephia/View.pm
     version: 0
-  Nephia::View::Xslate:
-    file: lib/Nephia/View/Xslate.pm
+  Nephia::View::MicroTemplate:
+    file: lib/Nephia/View/MicroTemplate.pm
     version: 0
 requires:
   Capture::Tiny: 0
@@ -59,11 +59,11 @@ requires:
   JSON: 0
   Plack: 0
   Router::Simple: 0
-  Text::Xslate: 0
+  Text::MicroTemplate::File: 0
 resources:
   bugtracker: https://github.com/ytnobody/Nephia/issues
   homepage: https://github.com/ytnobody/Nephia
   repository: git://github.com/ytnobody/Nephia.git
-version: 0.09
+version: 0.10
 x_contributors:
   - 'Takayuki Otake <k.wisiiy@gmail.com>'

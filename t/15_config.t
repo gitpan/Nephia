@@ -18,7 +18,7 @@ test_psgi
             my $res = $cb->(GET "/configtest");
             is $res->code, 200;
             is $res->content_type, 'application/json';
-            is $res->content_length, 44;
+            is $res->content_length, 52;
             my $json = JSON->new->utf8->decode( $res->content );
             is_deeply $json, test_config();
         };

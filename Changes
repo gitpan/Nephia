@@ -1,5 +1,9 @@
 Revision history for Perl extension Nephia
 
+0.10 2013-06-10T12:12:12Z
+        - Nephia::View::MicroTemplate is new default template engine. 
+        - Nephia::View::Xslate was split to new distribution(it's same name).
+
 0.09 2013-06-07T15:57:16Z
         - more quite design template and style
         - stop using Class::Load. use Nephia::ClassLoader

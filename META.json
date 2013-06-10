@@ -4,7 +4,7 @@
       "ytnobody <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.4.5",
+   "generated_by" : "Minilla/v0.4.9",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -57,14 +57,14 @@
             "JSON" : "0",
             "Plack" : "0",
             "Router::Simple" : "0",
-            "Text::Xslate" : "0"
+            "Text::MicroTemplate::File" : "0"
          }
       }
    },
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.09"
+         "version" : "0.10"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
@@ -81,8 +81,8 @@
       "Nephia::View" : {
          "file" : "lib/Nephia/View.pm"
       },
-      "Nephia::View::Xslate" : {
-         "file" : "lib/Nephia/View/Xslate.pm"
+      "Nephia::View::MicroTemplate" : {
+         "file" : "lib/Nephia/View/MicroTemplate.pm"
       }
    },
    "release_status" : "stable",
@@ -96,7 +96,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.09",
+   "version" : "0.10",
    "x_contributors" : [
       "Takayuki Otake <k.wisiiy@gmail.com>"
    ]

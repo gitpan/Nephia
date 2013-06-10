@@ -12,7 +12,7 @@ use JSON ();
 use FindBin;
 use Encode;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
@@ -232,11 +232,11 @@ Look this examples.
 
 This controller outputs response-value as JSON, and will be mounted on "/foobar".
 
-=head2 Use templates - Render with Xslate (Kolon-syntax)
+=head2 Use templates - Render with Text::MicroTemplate
 
   path '/' => sub {
       return {
-          template => 'index.tx',
+          template => 'index.html',
           title => 'Welcome to my homepage!',
       };
   };
@@ -246,6 +246,7 @@ If you specified it, controller searches template file from view-directory and r
 
 If you use multibyte-string in response, please remember 'use utf8;' and, you may specify character-set as like as following.
 
+  use utf8; ### <- very important
   path '/' => sub {
       return {
           template => 'mytemplate.tx',
@@ -441,9 +442,7 @@ Plack::Response
 
 Plack::Builder
 
-Text::Xslate
-
-Text::Xslate::Syntax::Kolon
+Text::MicroTemplate
 
 JSON
 

@@ -8,7 +8,7 @@ requires 'File::Spec';
 requires 'JSON';
 requires 'Plack';
 requires 'Router::Simple';
-requires 'Text::Xslate';
+requires 'Text::MicroTemplate::File';
 requires 'Guard';
 requires 'Capture::Tiny';
 

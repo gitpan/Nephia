@@ -4,7 +4,7 @@ use warnings;
 use Nephia;
 use utf8;
 
-our $VERSION = 0.09;
+our $VERSION = 0.10;
 
 nephia_plugins 'Bark';
 
@@ -12,7 +12,7 @@ my $item = 'ひのきのぼう';
 
 path '/' => sub {
     return {
-        template => 'index.tx',
+        template => 'index.html',
         title => 'Nephia::TestApp',
     };
 };
@@ -46,7 +46,7 @@ path '/configtest' => sub {
 
 path '/nihongo' => sub {
     return {
-        template => 'index.tx',
+        template => 'index.html',
         title => '日本語であそぼ',
     };
 };
