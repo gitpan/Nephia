@@ -13,6 +13,7 @@ eg/lib/MyApp/Root.pm
 eg/view/hoge.tx
 lib/Nephia.pm
 lib/Nephia/ClassLoader.pm
+lib/Nephia/Core.pm
 lib/Nephia/Setup.pm
 lib/Nephia/Setup/Base.pm
 lib/Nephia/Setup/Default.pm

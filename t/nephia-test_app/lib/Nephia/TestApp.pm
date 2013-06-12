@@ -1,12 +1,10 @@
 package Nephia::TestApp;
 use strict;
 use warnings;
-use Nephia;
+use Nephia plugins => qw/Bark/;
 use utf8;
 
-our $VERSION = 0.10;
-
-nephia_plugins 'Bark';
+our $VERSION = 0.11;
 
 my $item = 'ひのきのぼう';
 
@@ -87,7 +85,7 @@ path '/bark' => sub {
 };
 
 path '/barkbark' => sub {
-    barkbark(qw/foo bar/);
+    barkbark qw/foo bar/;
 };
 
 1;

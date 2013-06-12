@@ -1,5 +1,10 @@
 Revision history for Perl extension Nephia
 
+0.11 2013-06-12T09:22:18Z
+        - move Nephia to Nephia::Core for import() separation
+        - add a feature that loads plugins when called import()
+        - became able to use prototype-function in plugin
+
 0.10 2013-06-10T12:12:12Z
         - Nephia::View::MicroTemplate is new default template engine. 
         - Nephia::View::Xslate was split to new distribution(it's same name).

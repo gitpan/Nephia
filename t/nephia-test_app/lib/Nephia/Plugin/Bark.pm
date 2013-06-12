@@ -2,11 +2,11 @@ package Nephia::Plugin::Bark;
 use Exporter 'import';
 our @EXPORT = qw[ bark barkbark ];
 
-sub bark {
+sub bark () {
     return [200, [], ['Bark!']];
 }
 
-sub barkbark {
+sub barkbark (@) {
     return [200, [], [join(' ', 'Bark', @_)]];
 }
   
