@@ -174,6 +174,7 @@ sub _export_plugin_functions {
     my ($plugin, $caller) = @_;
     my $plugin_path = File::Spec->catfile(split('::', $plugin)).'.pm';
     require $plugin_path;
+    $plugin->import if *{$plugin."::import"}{CODE};
     {
         no strict 'refs';
         my @funcs = grep { $_ =~ /^[a-z]/ && $_ ne 'import' } keys %{$plugin.'::'};

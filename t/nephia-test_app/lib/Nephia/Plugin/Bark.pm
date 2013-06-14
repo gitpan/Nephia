@@ -1,6 +1,10 @@
 package Nephia::Plugin::Bark;
-use Exporter 'import';
-our @EXPORT = qw[ bark barkbark ];
+use strict;
+use warnings;
+
+sub import {
+    $Nephia::BARK = 'FOO';
+}
 
 sub bark () {
     return [200, [], ['Bark!']];

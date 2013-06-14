@@ -179,11 +179,18 @@ The only rule, namespace of new module must begins in "Nephia::Plugin::".
 
 If you want to export subroutines, those name must begin in lower alphabetic chars, and it must not be "import".
 
+import() will execute when plugin is loaded.
+
 For example.
 
     package Nephia::Plugin::Bark;
-    use Exporter 'import';
-    our @EXPORT = qw[ bark barkbark ];
+    use strict;
+    use warnings;
+
+    sub import {
+        my ($class) = @_;
+        ... ### Be execute when plugin is loaded.
+    }
     
 
     sub bark () {

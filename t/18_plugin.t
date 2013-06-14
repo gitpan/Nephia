@@ -11,6 +11,8 @@ use lib qw( ./t/nephia-test_app/lib );
 use Nephia::TestApp;
 use t::Util;
 
+is $Nephia::BARK, 'FOO', 'import check';
+
 test_psgi 
     app => Nephia::TestApp->run( test_config ),
     client => sub {
