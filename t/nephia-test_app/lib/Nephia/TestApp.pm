@@ -4,7 +4,7 @@ use warnings;
 use Nephia plugins => qw/Bark/;
 use utf8;
 
-our $VERSION = 0.13;
+our $VERSION = 0.14;
 
 my $item = 'ひのきのぼう';
 

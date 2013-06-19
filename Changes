@@ -1,5 +1,8 @@
 Revision history for Perl extension Nephia
 
+0.14 2013-06-19T07:34:12Z
+        - bug fix : Setup::Base cpanfile requires Config::Micro
+
 0.13 2013-06-19T07:13:42Z
         - add submapper feature [macopy]
         - wrap request-class with Nephia::request [songmu]

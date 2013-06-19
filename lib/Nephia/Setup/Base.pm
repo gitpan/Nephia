@@ -368,7 +368,8 @@ address.generated-by {
 
 cpanfile
 ---
-requires 'Nephia' => '0';
+requires 'Nephia'        => '0';
+requires 'Config::Micro' => '0';
 
 on test => sub {
     requires 'Test::More', '0.98';
