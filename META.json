@@ -1,10 +1,10 @@
 {
    "abstract" : "Mini WAF",
    "author" : [
-      "ytnobody <ytnobody@gmail.com>"
+      "C<ytnobody> <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.4.9",
+   "generated_by" : "Minilla/v0.4.2",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -23,54 +23,59 @@
       ]
    },
    "prereqs" : {
-      "build" : {
-         "requires" : {
-            "Test::More" : "0"
-         }
-      },
       "configure" : {
          "requires" : {
             "CPAN::Meta" : "0",
             "CPAN::Meta::Prereqs" : "0",
-            "Module::Build" : "0.38"
+            "Module::Build" : "0.38",
+            "perl" : "5.010001"
          }
       },
       "develop" : {
          "requires" : {
             "Test::CPAN::Meta" : "0",
             "Test::MinimumVersion" : "0.10108",
+            "Test::Perl::Critic" : "0",
             "Test::Pod" : "1.41",
-            "Test::Spellunker" : "v0.2.7"
+            "Test::Spellunker" : "v0.2.2"
          }
       },
       "runtime" : {
+         "recommends" : {
+            "URL::Encode::XS" : "0"
+         },
          "requires" : {
-            "Capture::Tiny" : "0",
             "Class::Accessor::Lite" : "0",
-            "Config::Micro" : "0",
-            "Cwd" : "0",
-            "Encode" : "0",
-            "Exporter" : "0",
-            "File::Basename" : "0",
-            "File::Spec" : "0",
-            "Guard" : "0",
             "JSON" : "0",
             "Plack" : "0",
             "Router::Simple" : "0",
-            "Text::MicroTemplate::File" : "0"
+            "Text::MicroTemplate::File" : "0",
+            "URL::Encode" : "0",
+            "parent" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Capture::Tiny" : "0",
+            "Guard" : "0",
+            "HTTP::Request::Common" : "0",
+            "Test::More" : "0.98"
          }
       }
    },
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.12"
+         "version" : "0.13"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
       },
       "Nephia::Core" : {
          "file" : "lib/Nephia/Core.pm"
+      },
+      "Nephia::Request" : {
+         "file" : "lib/Nephia/Request.pm"
       },
       "Nephia::Setup" : {
          "file" : "lib/Nephia/Setup.pm"
@@ -99,8 +104,14 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.12",
+   "version" : "0.13",
    "x_contributors" : [
-      "Takayuki Otake <k.wisiiy@gmail.com>"
+      "mackee <macopy123@gmail.com>",
+      "ichigotake <k.wisiiy@gmail.com>",
+      "Masayuki Matsuki <y.songmu@gmail.com>",
+      "Taiki Kawakami <moznion@gmail.com>",
+      "mackee <macopy123[attttt]gmai.com>",
+      "papix <mail@papix.net>",
+      "ytnobody <ytnobody@gmail.com>"
    ]
 }

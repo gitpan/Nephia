@@ -4,7 +4,7 @@ use warnings;
 use Nephia plugins => qw/Bark/;
 use utf8;
 
-our $VERSION = 0.12;
+our $VERSION = 0.13;
 
 my $item = 'ひのきのぼう';
 
@@ -17,7 +17,7 @@ path '/' => sub {
 
 path '/json' => sub {
     my $query = req->param('q');
-    return $query ? 
+    return $query ?
         { query => $query, message => 'Query OK' } :
         { message => 'Please input a query' }
     ;

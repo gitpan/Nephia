@@ -3,29 +3,45 @@ use strict;
 use warnings;
 
 use Exporter 'import';
-use Plack::Request;
+use Nephia::Request;
 use Plack::Response;
 use Plack::Builder;
 use Router::Simple;
 use Nephia::View;
+use Nephia::ClassLoader;
 use JSON ();
 use FindBin;
 use Encode;
+use Carp qw/croak/;
 
 our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
 our $CHARSET = 'UTF-8';
+our $APP_MAP = {};
+our $APP_ROOT;
 
 sub _path {
-    my ( $path, $code, $methods ) = @_;
+    my ( $path, $code, $methods, $target_class ) = @_;
     my $caller = caller();
+
+    if (
+        $target_class
+        && exists $APP_MAP->{$target_class}
+        && $APP_MAP->{$target_class}->{path}
+    ) {
+        $path =~ s!^/!!g;
+        my @paths = ($APP_MAP->{$target_class}->{path});
+        push @paths, $path if length($path) > 0;
+        $path = join '/', @paths;
+    }
+
     $MAPPER->connect(
         $path, 
         {
             action => sub {
-                my $req = Plack::Request->new( shift );
+                my $req = Nephia::Request->new( shift );
                 my $param = shift;
                 no strict qw[ refs subs ];
                 no warnings qw[ redefine ];
@@ -48,6 +64,25 @@ sub _path {
         },
         $methods ? { method => $methods } : undef,
     );
+
+}
+
+sub _submap {
+    my ( $path, $code, $base_class ) = @_;
+
+    $code =~ s/^\+/$base_class\::/g;
+
+    eval {
+        $APP_MAP->{$code}->{path} = $path;
+        Nephia::ClassLoader->load($code);
+        import $code;
+    };
+    if ($@) {
+        my $e = $@;
+        chomp $e;
+        $e =~ s/\ at\ .*$//g;
+        croak $e;
+    }
 }
 
 sub get ($&) {
@@ -72,7 +107,13 @@ sub del ($&) {
 
 sub path ($@) {
     my ( $path, $code, $methods ) = @_;
-    _path( $path, $code, $methods );
+    my $caller = caller();
+    if ( ref $code eq "CODE" ) {
+        _path( $path, $code, $methods, $caller );
+    }
+    else {
+        _submap( $path, $code, $caller );
+    }
 }
 
 sub res (&) {
@@ -109,7 +150,6 @@ sub run {
     $CONFIG = scalar @_ > 1 ? +{ @_ } : $_[0];
     $VIEW = Nephia::View->new( $CONFIG->{view} ? %{$CONFIG->{view}} : () );
     return builder { 
-        enable "ContentLength";
         enable "Static", root => "$FindBin::Bin/root/", path => qr{^/static/};
         $class->app;
     };
@@ -128,11 +168,15 @@ sub app {
     };
 }
 
+{
+    my $_json;
+    sub _json { $_json ||= JSON->new->utf8 }
+}
 sub json_res {
     my $res = shift;
-    my $body = JSON->new->utf8->encode( $res );
-    return [ 200, 
-        [ 
+    my $body = _json->encode( $res );
+    return [ 200,
+        [
             'Content-type'           => 'application/json',
             'X-Content-Type-Options' => 'nosniff',  ### For IE 9 or later. See http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2013-1297
             'X-Frame-Options'        => 'DENY',     ### Suppress loading web-page into iframe. See http://blog.mozilla.org/security/2010/09/08/x-frame-options/

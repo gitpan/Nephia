@@ -29,6 +29,13 @@ my($out, $err, @res) = capture {
 is $err, '', 'setup error';
 is $out, join('',(<DATA>)), 'setup step';
 
+my $version = Nephia::Setup->get_version;
+{
+    use Nephia ();
+    is $version, $Nephia::VERSION, 'get version';
+    no Nephia;
+}
+
 undef($guard);
 
 done_testing;
@@ -52,3 +59,4 @@ spew into file Verdure-Memory/etc/conf/common.pl
 spew into file Verdure-Memory/etc/conf/development.pl
 spew into file Verdure-Memory/etc/conf/staging.pl
 spew into file Verdure-Memory/etc/conf/production.pl
+spew into file Verdure-Memory/.gitignore

@@ -13,7 +13,7 @@ use Class::Accessor::Lite (
 sub new {
     my ( $class, %opts ) = @_;
 
-    my $appname = $opts{appname}; 
+    my $appname = $opts{appname};
     $appname =~ s/::/-/g;
     $opts{approot} = File::Spec->catdir('.', $appname);
 
@@ -36,12 +36,12 @@ sub new {
 sub _parse_template_data {
     my @data = @_;
     return +{
-        map { 
-            my ($key, $template) = split("---", $_, 2); 
+        map {
+            my ($key, $template) = split("---", $_, 2);
             $key =~ s/(\s|\r|\n)//g;
             $template =~ s/^\n//;
             ($key, $template);
-        } 
+        }
         grep { $_ =~ /---/ }
         split("===", join('', @data) )
     };
@@ -63,6 +63,7 @@ sub create {
     $self->cpanfile;
     $self->basic_test_file;
     $self->config_file;
+    $self->gitignore_file;
 }
 
 sub spew {
@@ -159,6 +160,15 @@ sub config_file {
         my $file = File::Spec->catfile($self->approot, 'etc', 'conf', $envname.'.pl');
         $self->spew($file, $body);
     }
+}
+
+sub gitignore_file {
+    my $self = shift;
+    my $appname = $self->appname;
+    my $body = $self->templates->{gitignore_file};
+    $body =~ s[\$appname][$appname]g;
+    my $file = File::Spec->catfile($self->approot, '.gitignore');
+    $self->spew($file, $body);
 }
 
 1;
@@ -286,7 +296,7 @@ index_template_file
 css_file
 ---
 body {
-    text-align: center; 
+    text-align: center;
     background: #f7f7f7;
     color: #666;
     padding: 0px;
@@ -360,8 +370,8 @@ cpanfile
 ---
 requires 'Nephia' => '0';
 
-on build => sub {
-    requires 'Test::More';
+on test => sub {
+    requires 'Test::More', '0.98';
 };
 
 
@@ -398,4 +408,15 @@ my $basedir = File::Spec->rel2abs(
     %{ do(File::Spec->catfile($basedir, 'etc', 'conf', 'common.pl')) },
     envname => '$envname',
 };
+===
+
+gitignore_file
+---
+*.bak
+*.old
+nytprof.out
+nytprof/
+*.db
+/local/
+/.carton/
 ===

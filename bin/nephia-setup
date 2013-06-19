@@ -1,18 +1,19 @@
-#!/usr/bin/env perl
+#!perl
 
 use strict;
 use warnings;
 use Nephia::Setup;
 use Getopt::Long;
 
-my $appname = shift @ARGV || '';
-help() unless $appname =~ /^\w+/;
-
 my $flavor = 'Default';
 
 GetOptions(
     "flavor=s" => \$flavor,
+    "version"  => \&version,
 );
+
+my $appname = shift @ARGV || '';
+help() unless $appname =~ /^\w+/;
 
 my $setup = Nephia::Setup->new(
     flavor => $flavor,
@@ -22,8 +23,21 @@ $setup->create;
 
 sub help {
     print <<EOF;
-Usage: 
-nephia-setup AppName [--flavor Flavor::Name]
+Usage:
+
+to create new application, 
+
+  nephia-setup AppName [--flavor Flavor::Name]
+
+show Nephia version,
+
+  nephia-setup --version
+
 EOF
+    exit;
+}
+
+sub version {
+    print 'Nephia ' . Nephia::Setup->get_version() . "\n";
     exit;
 }

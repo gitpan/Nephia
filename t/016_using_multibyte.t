@@ -2,16 +2,18 @@ use strict;
 use warnings;
 use Test::More;
 use Plack::Test;
+use Plack::Util;
 use HTTP::Request::Common;
 
 use lib qw( ./t/nephia-test_app/lib );
 use Nephia::TestApp;
-use t::Util;
 use utf8;
 use Encode;
 
+my $app = Plack::Util::load_psgi('t/nephia-test_app/app.psgi');
+
 test_psgi 
-    app => Nephia::TestApp->run( test_config ),
+    app => $app,
     client => sub {
         my $cb = shift;
 

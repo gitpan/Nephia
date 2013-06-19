@@ -1,17 +1,27 @@
 requires 'Class::Accessor::Lite';
-requires 'Config::Micro';
-requires 'Cwd';
-requires 'Encode';
-requires 'Exporter';
-requires 'File::Basename';
-requires 'File::Spec';
 requires 'JSON';
 requires 'Plack';
 requires 'Router::Simple';
 requires 'Text::MicroTemplate::File';
-requires 'Guard';
-requires 'Capture::Tiny';
+requires 'URL::Encode';
+requires 'parent';
 
-on build => sub {
-    requires 'Test::More';
+recommends 'URL::Encode::XS';
+
+on configure => sub {
+    requires 'CPAN::Meta';
+    requires 'CPAN::Meta::Prereqs';
+    requires 'Module::Build';
+    requires 'perl', '5.010001';
+};
+
+on test => sub {
+    requires 'Capture::Tiny';
+    requires 'Guard';
+    requires 'HTTP::Request::Common';
+    requires 'Test::More', "0.98";
+};
+
+on develop => sub {
+    requires 'Test::Perl::Critic';
 };

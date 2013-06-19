@@ -13,4 +13,15 @@ sub new {
     return $subclass->new( %opts );
 }
 
+sub get_version {
+    my $class = shift;
+    my $version;
+    {
+        use Nephia ();
+        $version = $Nephia::VERSION;
+        no Nephia;
+    };
+    return $version;
+}
+
 1;

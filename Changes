@@ -1,5 +1,13 @@
 Revision history for Perl extension Nephia
 
+0.13 2013-06-19T07:13:42Z
+        - add submapper feature [macopy]
+        - wrap request-class with Nephia::request [songmu]
+        - expand number of testfile
+        - stop using 'Plack::Middleware::ContentLength' internally
+        - implement get_version() feature into Setup.pm
+        - show Nephia version to 'nephia-setup --version'
+
 0.12 2013-06-14T11:11:42Z
         - import() will execute when plugin is loaded
 
