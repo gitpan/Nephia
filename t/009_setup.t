@@ -27,7 +27,11 @@ my($out, $err, @res) = capture {
 };
 
 is $err, '', 'setup error';
-is $out, join('',(<DATA>)), 'setup step';
+my $expect = join('',(<DATA>));
+if ($^O eq 'MSWin32') {
+    $expect =~ s/\//\\/g;
+}
+is $out, $expect, 'setup step';
 
 my $version = Nephia::Setup->get_version;
 {

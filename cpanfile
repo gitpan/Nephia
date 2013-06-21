@@ -7,6 +7,7 @@ requires 'URL::Encode';
 requires 'parent';
 
 recommends 'URL::Encode::XS';
+recommends 'Config::Micro', '0.02';
 
 on configure => sub {
     requires 'CPAN::Meta';

@@ -1,5 +1,9 @@
 Revision history for Perl extension Nephia
 
+0.15 2013-06-21T02:33:36Z
+        - add Config::Micro as a recommends
+        - fix test for MSWin32
+
 0.14 2013-06-19T07:34:12Z
         - bug fix : Setup::Base cpanfile requires Config::Micro
 

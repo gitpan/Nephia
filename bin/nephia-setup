@@ -9,7 +9,7 @@ my $flavor = 'Default';
 
 GetOptions(
     "flavor=s" => \$flavor,
-    "version"  => \&version,
+    "v|version"  => \&version,
 );
 
 my $appname = shift @ARGV || '';
