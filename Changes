@@ -1,5 +1,8 @@
 Revision history for Perl extension Nephia
 
+0.17 2013-06-26T15:04:27Z
+        - bug fix : Nephia::MetaTemplate->argument added
+
 0.16 2013-06-26T14:48:06Z
         - fix missing pseudo code for "res" in document
         - add meta template feature for creating new flavor easy

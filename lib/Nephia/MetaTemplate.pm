@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 use Class::Accessor::Lite (
     new => 0,
-    rw  => [qw[tag arrow oneliner replace_table]],
+    rw  => [qw[tag argument arrow oneliner replace_table]],
 );
 
 sub new {
