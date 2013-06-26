@@ -2,7 +2,7 @@ package Nephia;
 use strict;
 use warnings;
 use File::Spec;
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 sub import {
     my ($class, %opts) = @_;
@@ -125,7 +125,7 @@ And, you can write like following.
 
   path '/cond/sample' => sub {
       return res { 404 } unless req->param('q');
-      return { ( 200, [], ['you say '. req->param('q')] ) };
+      return res { ( 200, [], ['you say '. req->param('q')] ) };
   };
 
 Commands supported in "res" function are following.

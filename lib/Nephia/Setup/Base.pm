@@ -7,8 +7,9 @@ use Cwd;
 use Carp;
 use Class::Accessor::Lite (
     new => 0,
-    rw => [qw( appname approot pmpath templates )],
+    rw => [qw( appname approot pmpath templates meta_template )],
 );
+use Nephia::MetaTemplate;
 
 sub new {
     my ( $class, %opts ) = @_;
@@ -28,6 +29,7 @@ sub new {
             push @template_data, (<$_dh>);
         }
     }
+    $opts{meta_template} = Nephia::MetaTemplate->new;
     $opts{templates} = _parse_template_data( @template_data );
 
     return bless { %opts }, $class;
@@ -74,6 +76,12 @@ sub spew {
     close $fh;
 }
 
+sub spew_as_template {
+    my ($self, $file, $body) = @_;
+    my $template_body = $self->meta_template->process($body);
+    $self->spew($file, $template_body);
+}
+
 sub mkpath {
     my ($self, @part) = @_;
     my $path = File::Spec->catdir(@part);
@@ -115,7 +123,7 @@ sub index_template_file {
     my $self = shift;
     my $body = $self->templates->{index_template_file};
     my $file = File::Spec->catfile($self->approot, qw/view index.html/);
-    $self->spew($file, $body);
+    $self->spew_as_template($file, $body);
 }
 
 sub css_file {
@@ -250,24 +258,23 @@ it under the same terms as Perl itself.
 
 index_template_file
 ---
-? my $c = shift;
 <html>
 <head>
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="shortcut icon" href="/static/favicon.ico" />
-  <title><?= $c->{title} ?> - powerd by Nephia</title>
+  <title>[= title =] - powerd by Nephia</title>
 </head>
 <body>
   <div class="title">
-    <span class="title-label"><?= $c->{title} ?></span>
-    <span class="envname"><?= $c->{envname} ?></span>
+    <span class="title-label">[= title =]</span>
+    <span class="envname">[= envname =]</span>
   </div>
 
   <div class="content">
     <h2>Hello, Nephia world!</h2>
     <p>Nephia is a mini web-application framework.</p>
     <pre>
-    ### <?= $c->{apppath} ?>
+    ### [= apppath =]
     use Nephia;
 
     # <a href="/data">JSON responce sample</a>

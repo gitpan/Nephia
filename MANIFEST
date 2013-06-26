@@ -14,6 +14,7 @@ eg/view/hoge.tx
 lib/Nephia.pm
 lib/Nephia/ClassLoader.pm
 lib/Nephia/Core.pm
+lib/Nephia/MetaTemplate.pm
 lib/Nephia/Request.pm
 lib/Nephia/Setup.pm
 lib/Nephia/Setup/Base.pm
@@ -21,6 +22,7 @@ lib/Nephia/Setup/Default.pm
 lib/Nephia/View.pm
 lib/Nephia/View/MicroTemplate.pm
 t/000_compile.t
+t/008_meta_template.t
 t/009_setup.t
 t/011_return_json.t
 t/012_using_template.t

@@ -91,7 +91,7 @@ And, you can write like following.
 
     path '/cond/sample' => sub {
         return res { 404 } unless req->param('q');
-        return { ( 200, [], ['you say '. req->param('q')] ) };
+        return res { ( 200, [], ['you say '. req->param('q')] ) };
     };
 
 Commands supported in "res" function are following.

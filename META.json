@@ -4,7 +4,7 @@
       "C<ytnobody> <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.4.2",
+   "generated_by" : "Minilla/v0.5.3",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -37,7 +37,7 @@
             "Test::MinimumVersion" : "0.10108",
             "Test::Perl::Critic" : "0",
             "Test::Pod" : "1.41",
-            "Test::Spellunker" : "v0.2.2"
+            "Test::Spellunker" : "v0.2.7"
          }
       },
       "runtime" : {
@@ -67,13 +67,16 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.15"
+         "version" : "0.16"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
       },
       "Nephia::Core" : {
          "file" : "lib/Nephia/Core.pm"
+      },
+      "Nephia::MetaTemplate" : {
+         "file" : "lib/Nephia/MetaTemplate.pm"
       },
       "Nephia::Request" : {
          "file" : "lib/Nephia/Request.pm"
@@ -105,7 +108,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.15",
+   "version" : "0.16",
    "x_contributors" : [
       "mackee <macopy123@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
@@ -113,6 +116,6 @@
       "mackee <macopy123[attttt]gmai.com>",
       "papix <mail@papix.net>",
       "Taiki Kawakami <moznion@gmail.com>",
-      "ytnobody <ytnobody@gmail.com>"
+      "ytnobody / satoshi azuma <ytnobody@gmail.com>"
    ]
 }

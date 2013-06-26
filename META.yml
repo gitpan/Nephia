@@ -13,7 +13,7 @@ configure_requires:
   Module::Build: 0.38
   perl: 5.010001
 dynamic_config: 0
-generated_by: 'Minilla/v0.4.2, CPAN::Meta::Converter version 2.130880'
+generated_by: 'Minilla/v0.5.3, CPAN::Meta::Converter version 2.131560'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -31,11 +31,13 @@ no_index:
 provides:
   Nephia:
     file: lib/Nephia.pm
-    version: 0.15
+    version: 0.16
   Nephia::ClassLoader:
     file: lib/Nephia/ClassLoader.pm
   Nephia::Core:
     file: lib/Nephia/Core.pm
+  Nephia::MetaTemplate:
+    file: lib/Nephia/MetaTemplate.pm
   Nephia::Request:
     file: lib/Nephia/Request.pm
   Nephia::Setup:
@@ -63,7 +65,7 @@ resources:
   bugtracker: https://github.com/ytnobody/Nephia/issues
   homepage: https://github.com/ytnobody/Nephia
   repository: git://github.com/ytnobody/Nephia.git
-version: 0.15
+version: 0.16
 x_contributors:
   - 'mackee <macopy123@gmail.com>'
   - 'ichigotake <k.wisiiy@gmail.com>'
@@ -71,4 +73,4 @@ x_contributors:
   - 'mackee <macopy123[attttt]gmai.com>'
   - 'papix <mail@papix.net>'
   - 'Taiki Kawakami <moznion@gmail.com>'
-  - 'ytnobody <ytnobody@gmail.com>'
+  - 'ytnobody / satoshi azuma <ytnobody@gmail.com>'
