@@ -16,8 +16,7 @@ subtest default => sub {
 </head>
 </html>
 <body>
-  <h1>Access to value: <?= \$c->{title} ?></h1>
-  <h2>Access to nested value: <?= \$c->{author}->{name} ?></h2>
+  <h1>Access to value: <?= \$c->{title} ?></h1><h2>Access to nested value: <?= \$c->{author}->{name} ?></h2>
 </body>
 </html>
 EOF
@@ -38,8 +37,7 @@ subtest tterse => sub {
 </head>
 </html>
 <body>
-  <h1>Access to value: [% title %]</h1>
-  <h2>Access to nested value: [% author.name %]</h2>
+  <h1>Access to value: [% title %]</h1><h2>Access to nested value: [% author.name %]</h2>
 </body>
 </html>
 EOF
@@ -56,7 +54,6 @@ __DATA__
 </head>
 </html>
 <body>
-  <h1>Access to value: [= title =]</h1>
-  <h2>Access to nested value: [= author.name =]</h2>
+  <h1>Access to value: [= title =]</h1><h2>Access to nested value: [= author.name =]</h2>
 </body>
 </html>

@@ -19,8 +19,8 @@ sub new {
 sub process {
     my ($self, $instr) = @_;
     my $str = $instr;
-    for my $tag ( ($str =~ m|(\[\= .+ \=\])|g) ) {
-        my ($content) = $tag =~ m|\[\= (.+) \=\]|;
+    for my $tag ( ($str =~ m|(\[\= .*? \=\])|g) ) {
+        my ($content) = $tag =~ m|\[\= (.*?) \=\]|;
         my $raw_content = $content;
         my $arrow = $self->{arrow};
         $content =~ s|\.|$arrow|g;

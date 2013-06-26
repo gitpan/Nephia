@@ -1,5 +1,8 @@
 Revision history for Perl extension Nephia
 
+0.18 2013-06-26T16:07:12Z
+        - bug fix : Nephia::MetaTemplate tag matching rule was not good :(
+
 0.17 2013-06-26T15:04:27Z
         - bug fix : Nephia::MetaTemplate->argument added
 
