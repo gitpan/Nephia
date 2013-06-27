@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use Nephia::ClassLoader;
 use Nephia::Setup::Base;
-use Data::Dumper;
 
 sub new {
     my ( $class, %opts ) = @_;
@@ -19,7 +18,7 @@ sub new {
         my $dh = *{'Nephia::Setup::Base::DATA'}{IO};
         push @template_data, (<$dh>);
 
-        for my $flavor (@$flavors) {
+        for my $flavor (sort {($b =~ /^View::/) <=> ($a =~ /^View::/)} @$flavors) {
             my $flavor_class = $class->load_flavor($setup, $flavor);
             my $_dh = *{$flavor_class.'::DATA'}{IO};
             push @template_data, (<$_dh>) if $_dh;

@@ -40,6 +40,10 @@ sub _parse_template_data {
 sub create {
     my $self = shift;
 
+    if (-d $self->approot) {
+        croak "Cannot mkdir '" . $self->approot . "': Directory exists";
+    }
+
     $self->mkpath($self->approot);
     map {
         my @path = split '/', $_;

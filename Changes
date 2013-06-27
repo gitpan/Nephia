@@ -1,5 +1,8 @@
 Revision history for Perl extension Nephia
 
+0.20 2013-06-27T13:06:30Z
+        - bug fix : sort flavor order by "view or not" rule
+
 0.19 2013-06-27T07:13:20Z
         - feature : allow to use multiple flavor in nephia-setup
 

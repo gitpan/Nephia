@@ -22,23 +22,33 @@ my $setup = Nephia::Setup->new(
 isa_ok $setup, 'Nephia::Setup::Base';
 can_ok $setup, 'create';
 
-my($out, $err, @res) = capture {
-    $setup->create;
+subtest create => sub {
+    my($out, $err, @res) = capture {
+        $setup->create;
+    };
+
+    is $err, '', 'setup error';
+    my $expect = join('',(<DATA>));
+    if ($^O eq 'MSWin32') {
+        $expect =~ s/\//\\/g;
+    }
+    is $out, $expect, 'setup step';
 };
 
-is $err, '', 'setup error';
-my $expect = join('',(<DATA>));
-if ($^O eq 'MSWin32') {
-    $expect =~ s/\//\\/g;
-}
-is $out, $expect, 'setup step';
+subtest get_version => sub {
+    my $version = Nephia::Setup->get_version;
+    {
+        use Nephia ();
+        is $version, $Nephia::VERSION, 'get version';
+        no Nephia;
+    }
+};
 
-my $version = Nephia::Setup->get_version;
-{
-    use Nephia ();
-    is $version, $Nephia::VERSION, 'get version';
-    no Nephia;
-}
+subtest create_again => sub {
+    eval { $setup->create };
+    my $approot = $setup->approot;
+    like $@, qr/^Cannot mkdir \'$approot\': Directory exists/, 'setup error';
+};
 
 undef($guard);
 
