@@ -20,6 +20,7 @@ on test => sub {
     requires 'Capture::Tiny';
     requires 'Guard';
     requires 'HTTP::Request::Common';
+    requires 'File::pushd';
     requires 'Test::More', "0.98";
 };
 

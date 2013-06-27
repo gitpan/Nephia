@@ -14,7 +14,7 @@ use FindBin;
 use Encode;
 use Carp qw/croak/;
 
-our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins ];
+our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins base_dir ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
@@ -38,7 +38,7 @@ sub _path {
     }
 
     $MAPPER->connect(
-        $path, 
+        $path,
         {
             action => sub {
                 my $req = Nephia::Request->new( shift );
@@ -49,8 +49,8 @@ sub _path {
                 local *{$caller."::param"} = sub{ $param };
                 my $res = $code->( $req, $param );
                 if ( ref $res eq 'HASH' ) {
-                    return eval { $res->{template} } ? 
-                        render( $res ) : 
+                    return eval { $res->{template} } ?
+                        render( $res ) :
                         json_res( $res )
                     ;
                 }
@@ -124,13 +124,13 @@ sub res (&) {
         no strict qw[ refs subs ];
         no warnings qw[ redefine ];
         my $caller = caller();
-        map { 
+        map {
             my $method = $_;
-            *{$caller.'::'.$method} = sub (@) { 
+            *{$caller.'::'.$method} = sub (@) {
                 $res->$method( @_ );
                 return;
             };
-        } qw[ 
+        } qw[
             status headers body header
             content_type content_length
             content_encoding redirect cookies
@@ -149,7 +149,7 @@ sub run {
     my $class = shift;
     $CONFIG = scalar @_ > 1 ? +{ @_ } : $_[0];
     $VIEW = Nephia::View->new( $CONFIG->{view} ? %{$CONFIG->{view}} : () );
-    return builder { 
+    return builder {
         enable "Static", root => "$FindBin::Bin/root/", path => qr{^/static/};
         $class->app;
     };
@@ -198,8 +198,8 @@ sub render {
 
 sub config (@) {
     if ( scalar @_ > 0 ) {
-        $CONFIG = 
-            scalar @_ > 1 ? { @_ } : 
+        $CONFIG =
+            scalar @_ > 1 ? { @_ } :
             ref $_[0] eq 'HASH' ? $_[0] :
             do( $_[0] )
         ;
@@ -224,6 +224,26 @@ sub _export_plugin_functions {
         my @funcs = grep { $_ =~ /^[a-z]/ && $_ ne 'import' } keys %{$plugin.'::'};
         *{$caller.'::'.$_} = *{$plugin.'::'.$_} for @funcs;
     }
+}
+
+sub base_dir {
+    my ($proto) = caller();
+
+    my $base_dir;
+    if (my $libpath = $INC{"$proto.pm"}) {
+        $libpath =~ s!\\!/!g; # for win32
+        $libpath =~ s!(?:blib/)?lib/+$proto\.pm$!!;
+        $base_dir = File::Spec->rel2abs($libpath || './');
+    } else {
+        $base_dir = File::Spec->rel2abs('./');
+    }
+
+    no warnings 'redefine';
+    *Nephia::Core::base_dir = sub {
+        return $base_dir;
+    };
+
+    return $base_dir;
 }
 
 1;

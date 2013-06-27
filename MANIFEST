@@ -32,6 +32,7 @@ t/016_using_multibyte.t
 t/017_opt_methods.t
 t/018_plugin.t
 t/019_submapper.t
+t/020_base_dir.t
 t/100_request.t
 t/Util.pm
 t/nephia-test_app/app.psgi

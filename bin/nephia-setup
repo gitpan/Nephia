@@ -15,8 +15,10 @@ GetOptions(
 my $appname = shift @ARGV || '';
 help() unless $appname =~ /^\w+/;
 
+my @flavors = $flavor =~ /,/ ? split(/,/, $flavor) : ( $flavor );
+
 my $setup = Nephia::Setup->new(
-    flavor => $flavor,
+    flavor => [@flavors],
     appname => $appname,
 );
 $setup->create;

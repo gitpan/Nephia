@@ -17,27 +17,15 @@ sub new {
     my $appname = $opts{appname};
     $appname =~ s/::/-/g;
     $opts{approot} = File::Spec->catdir('.', $appname);
-
     $opts{pmpath} = File::Spec->catfile( $opts{approot}, 'lib', split(/::/, $opts{appname}. '.pm') );
-    my @template_data = ();
-    {
-        no strict 'refs';
-        my $dh = *{'Nephia::Setup::Base::DATA'}{IO};
-        push @template_data, (<$dh>);
-        if ($class ne 'Nephia::Setup::Default' ) {
-            my $_dh = *{$class.'::DATA'}{IO};
-            push @template_data, (<$_dh>);
-        }
-    }
     $opts{meta_template} = Nephia::MetaTemplate->new;
-    $opts{templates} = _parse_template_data( @template_data );
 
     return bless { %opts }, $class;
 }
 
 sub _parse_template_data {
-    my @data = @_;
-    return +{
+    my ($self, @data) = @_;
+    $self->templates( +{
         map {
             my ($key, $template) = split("---", $_, 2);
             $key =~ s/(\s|\r|\n)//g;
@@ -46,7 +34,7 @@ sub _parse_template_data {
         }
         grep { $_ =~ /---/ }
         split("===", join('', @data) )
-    };
+    } );
 }
 
 sub create {
