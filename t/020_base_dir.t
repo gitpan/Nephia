@@ -10,6 +10,8 @@ use File::Temp  qw/tempdir/;
 use File::Path  qw/mkpath/;
 use File::pushd qw/pushd/;
 use File::Spec;
+use Plack::Test;
+use HTTP::Request::Common;
 
 use Test::More;
 
@@ -79,9 +81,17 @@ EOS
 };
 
 subtest 'psgi' => sub {
-    my $one_liner = 'use Nephia; print base_dir; exit;';
-    my ($got)     = capture { system 'plackup', '-I' . LIB, '-e', $one_liner };
-    is $got, File::Spec->catfile($current_dir, NEPHIA_APP), 'should be got app root rightly';
+    my $app = eval {
+        use Nephia;
+        path '/' => sub { res {(200, [], [base_dir] )} };
+        __PACKAGE__->run;
+    };
+    test_psgi $app, sub {
+        my $cb = shift;
+        my $res = $cb->(GET '/');
+        ok $res->is_success, 'request OK';
+        is $res->content, File::Spec->catfile($current_dir, NEPHIA_APP), 'should be got app root rightly';
+    };
 };
 
 done_testing;

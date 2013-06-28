@@ -3,9 +3,15 @@
 use strict;
 use warnings;
 use Nephia::Setup;
+use File::Spec;
 use Getopt::Long;
 
 my $flavor = 'Default';
+
+my $config = do File::Spec->catfile($ENV{HOME}, '.nephia-setup');
+if (defined $config) {
+    $flavor = join ',', @{$config->{flavor}};
+}
 
 GetOptions(
     "flavor=s" => \$flavor,
@@ -27,7 +33,7 @@ sub help {
     print <<EOF;
 Usage:
 
-to create new application, 
+to create new application,
 
   nephia-setup AppName [--flavor Flavor::Name]
 

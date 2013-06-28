@@ -1,5 +1,9 @@
 Revision history for Perl extension Nephia
 
+0.21 2013-06-28T05:46:17Z
+        - feature : support ".nephia-setup" file in nephia-setup command
+        - bug fix : fix base_dir test with psgi
+
 0.20 2013-06-27T13:06:30Z
         - bug fix : sort flavor order by "view or not" rule
 
