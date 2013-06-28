@@ -4,7 +4,6 @@ use warnings;
 use Text::MicroTemplate::File;
 use File::Spec;
 use Carp;
-use Data::Dumper;
 
 sub new {
     my ( $class, %opts ) = @_;

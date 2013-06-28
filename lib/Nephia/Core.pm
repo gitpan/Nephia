@@ -233,9 +233,9 @@ sub base_dir {
     if (my $libpath = $INC{"$proto.pm"}) {
         $libpath =~ s!\\!/!g; # for win32
         $libpath =~ s!(?:blib/)?lib/+$proto\.pm$!!;
-        $base_dir = File::Spec->rel2abs($libpath || './');
+        $base_dir = File::Spec->rel2abs($libpath || '.');
     } else {
-        $base_dir = File::Spec->rel2abs('./');
+        $base_dir = File::Spec->rel2abs('.');
     }
 
     no warnings 'redefine';
