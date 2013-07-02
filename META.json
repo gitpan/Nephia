@@ -68,16 +68,13 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.22"
+         "version" : "0.23"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
       },
       "Nephia::Core" : {
          "file" : "lib/Nephia/Core.pm"
-      },
-      "Nephia::DSLModifier" : {
-         "file" : "lib/Nephia/DSLModifier.pm"
       },
       "Nephia::MetaTemplate" : {
          "file" : "lib/Nephia/MetaTemplate.pm"
@@ -112,7 +109,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.22",
+   "version" : "0.23",
    "x_contributors" : [
       "mackee <macopy123@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
@@ -120,6 +117,6 @@
       "mackee <macopy123[attttt]gmai.com>",
       "papix <mail@papix.net>",
       "moznion <moznion@gmail.com>",
-      "ytnobody / satoshi azuma <ytnobody@gmail.com>"
+      "ytnobody <ytnobody@gmail.com>"
    ]
 }

@@ -2,7 +2,7 @@ package Nephia;
 use strict;
 use warnings;
 use File::Spec;
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 sub import {
     my ($class, %opts) = @_;
@@ -22,7 +22,10 @@ sub import {
 
     for my $plugin ( map {"Nephia::Plugin::$_"} @plugins ) {
         require File::Spec->catfile(split/::/, $plugin.'.pm');
-        $plugin->import if *{$plugin."::import"}{CODE};
+        {
+            no warnings 'once'; ### suppress warning for fetching import coderef
+            $plugin->import if *{$plugin."::import"}{CODE};
+        }
         for my $func (grep { $_ =~ /^[a-z]/ && $_ ne 'import' } keys %{$plugin.'::'}) {
             *{$caller.'::'.$func} = *{$plugin.'::'.$func};
         }
