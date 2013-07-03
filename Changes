@@ -1,5 +1,8 @@
 Revision history for Perl extension Nephia
 
+0.24 2013-07-03T01:52:36Z
+        - bug fix : fix logic that checks existance of plugin coderef
+
 0.23 2013-07-02T03:21:31Z
         - refactor: Split DSLModifier as external module
 
