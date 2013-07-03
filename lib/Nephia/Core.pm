@@ -14,13 +14,14 @@ use FindBin;
 use Encode;
 use Carp qw/croak/;
 
-our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins base_dir ];
+our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins base_dir cookie set_cookie ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
 our $CHARSET = 'UTF-8';
 our $APP_MAP = {};
 our $APP_ROOT;
+our $COOKIE;
 
 sub _path {
     my ( $path, $code, $methods, $target_class ) = @_;
@@ -42,24 +43,34 @@ sub _path {
         {
             action => sub {
                 my $req = Nephia::Request->new( shift );
+                local $COOKIE = $req->cookies;
                 my $param = shift;
                 no strict qw[ refs subs ];
                 no warnings qw[ redefine ];
                 local *{$caller."::req"} = sub{ $req };
                 local *{$caller."::param"} = sub{ $param };
                 my $res = $code->( $req, $param );
+                my $rtn;
                 if ( ref $res eq 'HASH' ) {
-                    return eval { $res->{template} } ?
+                    $rtn = eval { $res->{template} } ?
                         render( $res ) :
                         json_res( $res )
                     ;
                 }
                 elsif ( ref $res eq 'Plack::Response' ) {
-                    return $res->finalize;
+                    $rtn = $res->finalize;
                 }
                 else {
-                    return $res;
+                    $rtn = $res;
                 }
+                if ($COOKIE) {
+                    my $res_obj = Plack::Response->new(@$rtn);
+                    for my $key (keys %$COOKIE) {
+                        $res_obj->cookies->{$key} = $COOKIE->{$key};
+                    }
+                    $rtn = $res_obj->finalize;
+                }
+                return $rtn;
             },
         },
         $methods ? { method => $methods } : undef,
@@ -244,6 +255,16 @@ sub base_dir {
     };
 
     return $base_dir;
+}
+
+sub set_cookie ($$){
+    my ($key, $val) = @_;
+    $COOKIE->{$key} = $val;
+}
+
+sub cookie ($) {
+    my $key = shift;
+    $COOKIE->{$key};
 }
 
 1;

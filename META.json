@@ -68,7 +68,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.24"
+         "version" : "0.25"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
@@ -109,7 +109,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.24",
+   "version" : "0.25",
    "x_contributors" : [
       "mackee <macopy123@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
