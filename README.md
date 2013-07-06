@@ -37,7 +37,7 @@ Look this examples.
 
         return {
             name => 'MyApp',
-            query => $req->param('q'),
+            query => param('q'),
         };
     };
 
@@ -88,8 +88,8 @@ You may specify code-reference that's passed to res() returns some value. These 
 And, you can write like following.
 
     path '/cond/sample' => sub {
-        return res { 404 } unless req->param('q');
-        return res { ( 200, [], ['you say '. req->param('q')] ) };
+        return res { 404 } unless param('q');
+        return res { ( 200, [], ['you say '. param('q')] ) };
     };
 
 Commands supported in "res" function are following.
@@ -118,7 +118,7 @@ Please see Plack::Response's documentation for more detail.
     put '/baz' => sub { ... };
     del '/hoge' => sub { ... };
 
-## How to use routing with Router::Simple style matching-pattern and capture it - Using param function
+## How to use routing with Router::Simple style matching-pattern and capture it - Using param function WITHOUT args
 
     post '/item/{id:[0-9]+}' => sub {
         my $item_id = param->{id}; # get param named "id" from path
@@ -274,6 +274,10 @@ Return Plack::Response object with some DSL.
 ## param
 
 Return parameters that contains in path as hashref.
+
+## param $param\_name
+
+Return specified query-parameter. (As like as "req->param($param\_name)")
 
 ## config
 

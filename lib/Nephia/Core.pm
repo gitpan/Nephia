@@ -48,7 +48,10 @@ sub _path {
                 no strict qw[ refs subs ];
                 no warnings qw[ redefine ];
                 local *{$caller."::req"} = sub{ $req };
-                local *{$caller."::param"} = sub{ $param };
+                local *{$caller."::param"} = sub (;$) {
+                    my $key = shift;
+                    $key ? $req->param($key) : $param;
+                };
                 my $res = $code->( $req, $param );
                 my $rtn;
                 if ( ref $res eq 'HASH' ) {

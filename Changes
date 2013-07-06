@@ -1,5 +1,8 @@
 Revision history for Perl extension Nephia
 
+0.26 2013-07-06T07:39:10Z
+        - feature : modify to return the query parameter that specified when given an argument to param DSL 
+
 0.25 2013-07-03T06:43:55Z
         - feature : add cookie / set_cookie DSL
 

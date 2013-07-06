@@ -28,6 +28,7 @@ t/009_setup.t
 t/011_return_json.t
 t/012_using_template.t
 t/013_direct_response.t
+t/014_params.t
 t/015_config.t
 t/016_using_multibyte.t
 t/017_opt_methods.t
