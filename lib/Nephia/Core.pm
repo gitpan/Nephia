@@ -14,7 +14,7 @@ use FindBin;
 use Encode;
 use Carp qw/croak/;
 
-our @EXPORT = qw[ get post put del path req res param run config app nephia_plugins base_dir cookie set_cookie ];
+our @EXPORT = qw[ get post put del path req res param path_param nip run config app nephia_plugins base_dir cookie set_cookie ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
@@ -43,16 +43,18 @@ sub _path {
         {
             action => sub {
                 my $req = Nephia::Request->new( shift );
+                $req->{path_param} = shift;
                 local $COOKIE = $req->cookies;
-                my $param = shift;
                 no strict qw[ refs subs ];
                 no warnings qw[ redefine ];
                 local *{$caller."::req"} = sub{ $req };
                 local *{$caller."::param"} = sub (;$) {
                     my $key = shift;
-                    $key ? $req->param($key) : $param;
+                    $key ? $req->param($key) : $req->parameters;
                 };
-                my $res = $code->( $req, $param );
+                local *{$caller."::path_param"} = sub (;$) { $req->path_param(shift) };
+                local *{$caller."::nip"} = sub (;$) { $req->nip(shift) };
+                my $res = $code->( $req, $req->path_param );
                 my $rtn;
                 if ( ref $res eq 'HASH' ) {
                     $rtn = eval { $res->{template} } ?

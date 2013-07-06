@@ -68,7 +68,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.26"
+         "version" : "0.27"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
@@ -109,14 +109,14 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.26",
+   "version" : "0.27",
    "x_contributors" : [
       "mackee <macopy123@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
       "Masayuki Matsuki <y.songmu@gmail.com>",
       "mackee <macopy123[attttt]gmai.com>",
-      "papix <mail@papix.net>",
       "moznion <moznion@gmail.com>",
+      "papix <mail@papix.net>",
       "ytnobody / satoshi azuma <ytnobody@gmail.com>"
    ]
 }

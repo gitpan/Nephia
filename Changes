@@ -1,5 +1,10 @@
 Revision history for Perl extension Nephia
 
+0.27 2013-07-06T17:07:26Z
+        - refactor : add trigger "required_modules" in Nephia::Setup
+        - feature : add nip / path_param feature
+        - refactor : modify param function so that does not address the value associated with "Router::Simple".
+
 0.26 2013-07-06T07:39:10Z
         - feature : modify to return the query parameter that specified when given an argument to param DSL 
 

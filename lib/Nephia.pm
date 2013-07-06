@@ -2,7 +2,7 @@ package Nephia;
 use strict;
 use warnings;
 use File::Spec;
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 sub import {
     my ($class, %opts) = @_;
@@ -53,6 +53,8 @@ Nephia - Mini WAF
 =head1 DESCRIPTION
 
 Nephia is a mini web-application framework.
+
+B<This software is still alpha quality. Its API may change without notice.> 
 
 =head1 MOUNT A CONTROLLER
 
@@ -169,10 +171,10 @@ Please see Plack::Response's documentation for more detail.
   put '/baz' => sub { ... };
   del '/hoge' => sub { ... };
 
-=head2 How to use routing with Router::Simple style matching-pattern and capture it - Using param function WITHOUT args
+=head2 How to use routing with Router::Simple style matching-pattern and capture it - Using path_param function
 
   post '/item/{id:[0-9]+}' => sub {
-      my $item_id = param->{id}; # get param named "id" from path
+      my $item_id = path_param->{id}; # get param named "id" from path
       ...
   };
 
@@ -322,13 +324,27 @@ Return Plack::Request object. You can call this function in code-reference that 
 
 Return Plack::Response object with some DSL.
 
-=head2 param
+=head2 param 
 
-Return parameters that contains in path as hashref.
+Return query-parameters that contains in path as hashref. (As like as "req->parameters")
 
 =head2 param $param_name
 
 Return specified query-parameter. (As like as "req->param($param_name)")
+
+=head2 path_param
+
+Return parameters as hashref that captured by Router::Simple.
+
+=head2 path_param $keyname
+
+Return specified parameter that captured by Router::Simple.
+
+=head2 nip / nip $keyname
+
+Alias for path_param.
+
+NOTE: Need more clever name for this function.
 
 =head2 config
 

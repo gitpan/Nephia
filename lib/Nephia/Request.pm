@@ -79,4 +79,11 @@ sub param_raw {
     return $self->parameters_raw->get_all($key);
 }
 
+sub path_param {
+    my ($self, $key) = @_;
+    return $key ? $self->{path_param}{$key} : $self->{path_param};
+}
+
+*nip = \&path_param;
+
 1;

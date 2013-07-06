@@ -4,7 +4,7 @@ use warnings;
 use Nephia plugins => qw/Bark/;
 use utf8;
 
-our $VERSION = 0.26;
+our $VERSION = 0.27;
 
 my $item = 'ひのきのぼう';
 
@@ -74,14 +74,14 @@ del '/item' => sub {
 };
 
 post '/item/{newitem:.+}' => sub {
-    $item = param()->{'newitem'};
+    $item = nip->{'newitem'};
     return {
         message => "$item　を　つかう",
     };
 };
 
 get '/with/{who:.+}' => sub {
-    my $who    = param()->{'who'};
+    my $who    = nip('who');
     my $action = param('action') || '踊った';
     return { message => $who."と".$action };
 };

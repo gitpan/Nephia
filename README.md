@@ -15,6 +15,8 @@ Nephia - Mini WAF
 
 Nephia is a mini web-application framework.
 
+__This software is still alpha quality. Its API may change without notice.__ 
+
 # MOUNT A CONTROLLER
 
 Use "path" function as following in lib/MyApp.pm .
@@ -118,10 +120,10 @@ Please see Plack::Response's documentation for more detail.
     put '/baz' => sub { ... };
     del '/hoge' => sub { ... };
 
-## How to use routing with Router::Simple style matching-pattern and capture it - Using param function WITHOUT args
+## How to use routing with Router::Simple style matching-pattern and capture it - Using path\_param function
 
     post '/item/{id:[0-9]+}' => sub {
-        my $item_id = param->{id}; # get param named "id" from path
+        my $item_id = path_param->{id}; # get param named "id" from path
         ...
     };
 
@@ -271,13 +273,27 @@ Return Plack::Request object. You can call this function in code-reference that 
 
 Return Plack::Response object with some DSL.
 
-## param
+## param 
 
-Return parameters that contains in path as hashref.
+Return query-parameters that contains in path as hashref. (As like as "req->parameters")
 
 ## param $param\_name
 
 Return specified query-parameter. (As like as "req->param($param\_name)")
+
+## path\_param
+
+Return parameters as hashref that captured by Router::Simple.
+
+## path\_param $keyname
+
+Return specified parameter that captured by Router::Simple.
+
+## nip / nip $keyname
+
+Alias for path\_param.
+
+NOTE: Need more clever name for this function.
 
 ## config
 

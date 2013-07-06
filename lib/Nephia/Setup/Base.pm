@@ -37,6 +37,14 @@ sub _parse_template_data {
     } );
 }
 
+sub _set_required_modules {
+    my ($self, $required_modules) = @_;
+
+    for my $module (keys %{$required_modules}) {
+        $self->{required_modules}->{$module} = $required_modules->{$module};
+    }
+}
+
 sub create {
     my $self = shift;
 
@@ -127,11 +135,18 @@ sub css_file {
 
 sub cpanfile {
     my $self = shift;
+
+    my $required_modules = '';
+    for my $module (keys %{$self->{required_modules}}) {
+        $required_modules .= qq{requires '$module' => '$self->{required_modules}->{$module}';\n};
+    }
+
     my $appname = $self->appname;
     $appname =~ s[::][-]g;
     my $pmpath = $self->pmpath;
     $pmpath =~ s[$appname][.];
     my $body = $self->templates->{cpanfile};
+    $body =~ s[\$required_modules][$required_modules]g;
     my $file = File::Spec->catfile($self->approot, 'cpanfile');
     $self->spew($file, $body);
 }
@@ -367,9 +382,9 @@ address.generated-by {
 
 cpanfile
 ---
-requires 'Nephia'        => '0';
+requires 'Nephia' => '0';
 requires 'Config::Micro' => '0.02';
-
+$required_modules
 on test => sub {
     requires 'Test::More', '0.98';
 };

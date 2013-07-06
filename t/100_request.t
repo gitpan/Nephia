@@ -8,6 +8,7 @@ use Test::More;
 my $query = 'foo=%E3%81%BB%E3%81%92&bar=%E3%81%B5%E3%81%8C1&bar=%E3%81%B5%E3%81%8C2';
 my $host  = 'example.com';
 my $path  = '/hoge/fuga';
+my $path_param = +{id => 'fuga'};
 
 my $req = Nephia::Request->new({
     QUERY_STRING   => $query,
@@ -15,6 +16,7 @@ my $req = Nephia::Request->new({
     HTTP_HOST      => $host,
     PATH_INFO      => $path,
 });
+$req->{path_param} = $path_param;
 
 subtest 'isa' => sub {
     isa_ok $req, 'Nephia::Request';
@@ -41,6 +43,20 @@ subtest 'uri' => sub {
     my $base = $req->base;
     isa_ok $base, 'URI';
     is $base.'', "http://$host/";
+};
+
+subtest 'path_param' => sub {
+    isa_ok $req->path_param, 'HASH';
+    is $req->path_param('id'), 'fuga', 'key specified';
+    is $req->path_param('foo'), undef, 'key specified and undefined value';
+    is_deeply $req->path_param, +{id => 'fuga'}, 'key not specified';
+};
+
+subtest 'nip' => sub {
+    isa_ok $req->nip, 'HASH';
+    is $req->nip('id'), $req->path_param('id'), 'key specified';
+    is $req->nip('foo'), $req->path_param('foo'), 'key specified and undefined value';
+    is_deeply $req->nip, $req->path_param, 'key not specified';
 };
 
 done_testing;
