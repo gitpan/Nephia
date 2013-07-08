@@ -25,7 +25,7 @@ sub new {
             'Nephia'        => '0',
             'Config::Micro' => '0.02',
         },
-        additional_methods => [],
+        additional_methods => {},
     }, $class;
 }
 
@@ -80,7 +80,7 @@ sub create {
     $self->config_file;
     $self->gitignore_file;
 
-    for my $method (@{$self->{additional_methods}}) {
+    for my $method (keys %{$self->{additional_methods}}) {
         $self->$method if $self->can($method);
     }
 }

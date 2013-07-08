@@ -1,5 +1,8 @@
 Revision history for Perl extension Nephia
 
+0.29 2013-07-08T06:29:54Z
+        - bug fix : fix setup function [papix]
+
 0.28 2013-07-08T05:58:20Z
         - refactor : modify setup more friendly for minilla
         - refactor : improved generation of cpanfile [papix]

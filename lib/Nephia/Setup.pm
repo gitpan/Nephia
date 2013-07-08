@@ -24,7 +24,10 @@ sub new {
             push @template_data, (<$_dh>) if $_dh;
 
             $setup->_set_required_modules( $required_modules );
-            $setup->{additional_methods} = $additional_methods;
+
+            for my $module (@{$additional_methods}) {
+                $setup->{additional_methods}->{$module} = 1;
+            }
         }
     }
     $setup->_parse_template_data( @template_data );
