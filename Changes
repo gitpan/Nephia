@@ -1,5 +1,11 @@
 Revision history for Perl extension Nephia
 
+0.28 2013-07-08T05:58:20Z
+        - refactor : modify setup more friendly for minilla
+        - refactor : improved generation of cpanfile [papix]
+        - bug fix : fix mojibake in config file [ichigotake]
+        - feature : add Setup::Git as an only one core flavor [papix]
+
 0.27 2013-07-06T17:07:26Z
         - refactor : add trigger "required_modules" in Nephia::Setup
         - feature : add nip / path_param feature

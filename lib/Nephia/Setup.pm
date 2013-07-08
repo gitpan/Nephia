@@ -19,11 +19,12 @@ sub new {
         push @template_data, (<$dh>);
 
         for my $flavor (sort {($b =~ /^View::/) <=> ($a =~ /^View::/)} @$flavors) {
-            my ($flavor_class, $required_modules) = $class->load_flavor($setup, $flavor);
+            my ($flavor_class, $required_modules, $additional_methods) = $class->load_flavor($setup, $flavor);
             my $_dh = *{$flavor_class.'::DATA'}{IO};
             push @template_data, (<$_dh>) if $_dh;
 
             $setup->_set_required_modules( $required_modules );
+            $setup->{additional_methods} = $additional_methods;
         }
     }
     $setup->_parse_template_data( @template_data );
@@ -44,13 +45,14 @@ sub load_flavor {
 
     $class->_export_flavor_functions($flavor_class);
 
-    my $required_modules;
+    my ($required_modules, $additional_methods);
     {
         no strict 'refs';
         $required_modules = $flavor_class->can('required_modules') ? { &{$flavor_class.'::required_modules'} } : {};
+        $additional_methods = $flavor_class->can('additional_methods') ? [ &{$flavor_class.'::additional_methods'} ] : [];
     }
 
-    return ($flavor_class, $required_modules);
+    return ($flavor_class, $required_modules, $additional_methods);
 }
 
 sub _export_flavor_functions {

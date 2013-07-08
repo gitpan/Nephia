@@ -17,6 +17,7 @@ my $guard = guard { chdir $pwd };
 
 my $setup = Nephia::Setup->new(
     appname => 'Verdure::Memory',
+    flavor  => ['Git'],
 );
 
 isa_ok $setup, 'Nephia::Setup::Base';
@@ -28,26 +29,11 @@ subtest create => sub {
     };
 
     is $err, '', 'setup error';
-    my $expect = join('',(<DATA>));
+    chomp(my $expect = join('',(<DATA>)));
     if ($^O eq 'MSWin32') {
         $expect =~ s/\//\\/g;
     }
-    is $out, $expect, 'setup step';
-};
-
-subtest get_version => sub {
-    my $version = Nephia::Setup->get_version;
-    {
-        use Nephia ();
-        is $version, $Nephia::VERSION, 'get version';
-        no Nephia;
-    }
-};
-
-subtest create_again => sub {
-    eval { $setup->create };
-    my $approot = $setup->approot;
-    like $@, qr/^Cannot mkdir \'$approot\': Directory exists/, 'setup error';
+    like $out, qr/^$expect/, 'setup step';
 };
 
 undef($guard);
@@ -75,3 +61,4 @@ spew into file Verdure-Memory/etc/conf/development.pl
 spew into file Verdure-Memory/etc/conf/staging.pl
 spew into file Verdure-Memory/etc/conf/production.pl
 spew into file Verdure-Memory/.gitignore
+Initialized empty Git repository in

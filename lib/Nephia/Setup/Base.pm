@@ -20,7 +20,13 @@ sub new {
     $opts{pmpath} = File::Spec->catfile( $opts{approot}, 'lib', split(/::/, $opts{appname}. '.pm') );
     $opts{meta_template} = Nephia::MetaTemplate->new;
 
-    return bless { %opts }, $class;
+    return bless { %opts,
+        required_modules => {
+            'Nephia'        => '0',
+            'Config::Micro' => '0.02',
+        },
+        additional_methods => [],
+    }, $class;
 }
 
 sub _parse_template_data {
@@ -41,7 +47,13 @@ sub _set_required_modules {
     my ($self, $required_modules) = @_;
 
     for my $module (keys %{$required_modules}) {
-        $self->{required_modules}->{$module} = $required_modules->{$module};
+        my $version = $required_modules->{$module};
+        if (defined $self->{required_modules}->{$module}) {
+            my $defined_version = $self->{required_modules}->{$module};
+            $self->{required_modules}->{$module} = $defined_version > $version ? $defined_version : $version;
+        } else {
+            $self->{required_modules}->{$module} = $version;
+        }
     }
 }
 
@@ -58,6 +70,7 @@ sub create {
         $self->mkpath($self->approot, @path);
     } qw( lib etc etc/conf view root root/static t );
 
+    $self->changes_file;
     $self->psgi_file;
     $self->app_class_file;
     $self->index_template_file;
@@ -66,6 +79,10 @@ sub create {
     $self->basic_test_file;
     $self->config_file;
     $self->gitignore_file;
+
+    for my $method (@{$self->{additional_methods}}) {
+        $self->$method if $self->can($method);
+    }
 }
 
 sub spew {
@@ -133,13 +150,23 @@ sub css_file {
     $self->spew($file, $body);
 }
 
+sub changes_file {
+    my $self = shift;
+    my $body = $self->templates->{Changes};
+    my $appname = $self->appname;
+    $body =~ s[\$appname][$appname]g;
+    my $file = File::Spec->catfile($self->approot, qw/Changes/);
+    $self->spew($file, $body);
+}
+
 sub cpanfile {
     my $self = shift;
 
-    my $required_modules = '';
-    for my $module (keys %{$self->{required_modules}}) {
-        $required_modules .= qq{requires '$module' => '$self->{required_modules}->{$module}';\n};
-    }
+    my $required_modules = join "\n", map {
+        qq{requires '$_' => '$self->{required_modules}->{$_}';}
+    } sort {
+        ($b =~ /Nephia/) <=> ($a =~ /Nephia/) || $a cmp $b
+    } keys %{$self->{required_modules}};
 
     my $appname = $self->appname;
     $appname =~ s[::][-]g;
@@ -382,9 +409,8 @@ address.generated-by {
 
 cpanfile
 ---
-requires 'Nephia' => '0';
-requires 'Config::Micro' => '0.02';
 $required_modules
+
 on test => sub {
     requires 'Test::More', '0.98';
 };
@@ -406,6 +432,7 @@ done_testing;
 common_conf
 ---
 ### common config
+use utf8;
 +{
     appname => '$appname',
 };
@@ -414,6 +441,7 @@ common_conf
 conf_file
 ---
 ### environment specific config
+use utf8;
 use File::Spec;
 use File::Basename 'dirname';
 my $basedir = File::Spec->rel2abs(
@@ -427,11 +455,30 @@ my $basedir = File::Spec->rel2abs(
 
 gitignore_file
 ---
-*.bak
-*.old
+cover_db
+META.yml
+Makefile
+blib
+pm_to_blib
+MANIFEST
+Makefile.old
 nytprof.out
-nytprof/
-*.db
-/local/
-/.carton/
+MANIFEST.bak
+*.sw[po]
+/$appname-*
+/.build
+/_build_params
+/Build
+/_build
+!Build/
+!META.json
+!LICENSE
+MYMETA.*
+inc
+===
+
+Changes
+---
+{{$NEXT}}
+        - original version
 ===

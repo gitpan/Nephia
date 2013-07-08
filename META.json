@@ -4,7 +4,7 @@
       "C<ytnobody> <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.5.3",
+   "generated_by" : "Minilla/v0.5.5",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -47,6 +47,7 @@
          },
          "requires" : {
             "Class::Accessor::Lite" : "0",
+            "File::pushd" : "0",
             "JSON" : "0",
             "Plack" : "0",
             "Router::Simple" : "0",
@@ -58,7 +59,6 @@
       "test" : {
          "requires" : {
             "Capture::Tiny" : "0",
-            "File::pushd" : "0",
             "Guard" : "0",
             "HTTP::Request::Common" : "0",
             "Test::More" : "0.98"
@@ -68,7 +68,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.27"
+         "version" : "0.28"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
@@ -91,6 +91,9 @@
       "Nephia::Setup::Default" : {
          "file" : "lib/Nephia/Setup/Default.pm"
       },
+      "Nephia::Setup::Git" : {
+         "file" : "lib/Nephia/Setup/Git.pm"
+      },
       "Nephia::View" : {
          "file" : "lib/Nephia/View.pm"
       },
@@ -109,13 +112,13 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.27",
+   "version" : "0.28",
    "x_contributors" : [
       "mackee <macopy123@gmail.com>",
-      "ichigotake <k.wisiiy@gmail.com>",
       "Masayuki Matsuki <y.songmu@gmail.com>",
       "mackee <macopy123[attttt]gmai.com>",
       "moznion <moznion@gmail.com>",
+      "ichigotake <k.wisiiy@gmail.com>",
       "papix <mail@papix.net>",
       "ytnobody / satoshi azuma <ytnobody@gmail.com>"
    ]
