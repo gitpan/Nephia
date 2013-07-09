@@ -22,6 +22,7 @@ on test => sub {
     requires 'Guard';
     requires 'HTTP::Request::Common';
     requires 'Test::More', "0.98";
+    requires 'File::Which';
 };
 
 on develop => sub {

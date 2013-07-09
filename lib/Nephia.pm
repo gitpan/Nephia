@@ -2,7 +2,7 @@ package Nephia;
 use strict;
 use warnings;
 use File::Spec;
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 sub import {
     my ($class, %opts) = @_;
@@ -204,6 +204,17 @@ Example:
   path '/childapp' => '+Child';
 
 "/chilapp" connect to "MyApp::Child".
+
+Support to multiple path to SubApp.
+
+Example:
+
+  package MyApp;
+
+  path '/subapp1' => 'SubApp';
+  path '/subapp2' => 'SubApp';
+
+The SubApp connected to "/subapp1" and "/subapp2".
 
 =head2 Using Cookie
 

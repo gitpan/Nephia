@@ -20,6 +20,7 @@ our $VIEW;
 our $CONFIG = {};
 our $CHARSET = 'UTF-8';
 our $APP_MAP = {};
+our $APP_CODE = {};
 our $APP_ROOT;
 our $COOKIE;
 
@@ -32,6 +33,15 @@ sub _path {
         && exists $APP_MAP->{$target_class}
         && $APP_MAP->{$target_class}->{path}
     ) {
+        # setup for submapping one more
+        $APP_CODE->{$target_class} ||= {};
+        if (!exists $APP_CODE->{$target_class}->{$path}) {
+            $APP_CODE->{$target_class}->{$path} = {
+                code => $code,
+                methods => $methods,
+            };
+        }
+
         $path =~ s!^/!!g;
         my @paths = ($APP_MAP->{$target_class}->{path});
         push @paths, $path if length($path) > 0;
@@ -84,14 +94,22 @@ sub _path {
 }
 
 sub _submap {
-    my ( $path, $code, $base_class ) = @_;
+    my ( $path, $package, $base_class ) = @_;
 
-    $code =~ s/^\+/$base_class\::/g;
+    $package =~ s/^\+/$base_class\::/g;
 
     eval {
-        $APP_MAP->{$code}->{path} = $path;
-        Nephia::ClassLoader->load($code);
-        import $code;
+        $APP_MAP->{$package}->{path} = $path;
+        if (Nephia::ClassLoader->is_loaded($package)) {
+            for my $suffix_path (keys %{$APP_CODE->{$package}}) {
+                my $app_code = $APP_CODE->{$package}->{$suffix_path};
+                _path ($suffix_path, $app_code->{code}, $app_code->{methods}, $package);
+            }
+        }
+        else {
+            Nephia::ClassLoader->load($package);
+            import $package;
+        }
     };
     if ($@) {
         my $e = $@;

@@ -59,6 +59,7 @@
       "test" : {
          "requires" : {
             "Capture::Tiny" : "0",
+            "File::Which" : "0",
             "Guard" : "0",
             "HTTP::Request::Common" : "0",
             "Test::More" : "0.98"
@@ -68,7 +69,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.29"
+         "version" : "0.30"
       },
       "Nephia::ClassLoader" : {
          "file" : "lib/Nephia/ClassLoader.pm"
@@ -112,14 +113,14 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.29",
+   "version" : "0.30",
    "x_contributors" : [
       "mackee <macopy123@gmail.com>",
       "Masayuki Matsuki <y.songmu@gmail.com>",
-      "mackee <macopy123[attttt]gmai.com>",
       "moznion <moznion@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
       "papix <mail@papix.net>",
-      "ytnobody / satoshi azuma <ytnobody@gmail.com>"
+      "mackee <macopy123[attttt]gmai.com>",
+      "ytnobody <ytnobody@gmail.com>"
    ]
 }

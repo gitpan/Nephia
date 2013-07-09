@@ -27,6 +27,12 @@ test_psgi
             is $res->content, 'this location in sub_app.';
         };
 
+        subtest "sub app twice" => sub {
+            my $res = $cb->(GET "/subapp2");
+            is $res->code, 200;
+            is $res->content, 'this location in sub_app.';
+        };
+
         subtest "child app" => sub {
             my $res = $cb->(GET "/childapp");
             is $res->code, 200;

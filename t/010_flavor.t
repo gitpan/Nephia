@@ -1,6 +1,12 @@
 use strict;
 use warnings;
 use Test::More;
+use File::Which;
+
+unless ( which('git') ) {
+    plan skip_all => 'A setup flavor "Git" requires "git" command';
+}
+
 use Nephia::Setup;
 use Capture::Tiny 'capture';
 use File::Temp 'tempdir';

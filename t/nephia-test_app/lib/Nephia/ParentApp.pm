@@ -13,6 +13,7 @@ path '/' => sub {
 
 path '/subapp' => 'Nephia::SubApp';
 path '/childapp' => '+ChildApp';
+path '/subapp2' => 'Nephia::SubApp';
 
 1;
 
