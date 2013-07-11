@@ -1,5 +1,18 @@
 Revision history for Perl extension Nephia
 
+0.31 2013-07-11T04:06:33Z
+        - bug fix : fix bug of reverse prefix in submapper [songmu]
+        - bug fix : strange works of base_dir [songmu]
+        - refactor : Implement Nephia::Response [songmu]
+        - refactor : fix Nephia::Setup#get_version for more shortly [songmu]
+        - refactor : remove duplicated code that loading plugins [songmu]
+        - refactor : remove Nephia::ClassLoader and use Module::Load [songmu]
+        - refactor : Nephia::Core inherits Exporter for export_to_level [songmu]
+        - refactor : add test for Nephia::Core [songmu / ytnobody]
+        - refactor : add template_path into arguments of Nephia::View when instantiate [ytnobody]
+        - feature : --plugin option enabled in nephia-setup [papix]
+
+
 0.30 2013-07-09T02:27:49Z
         - refactor : support multiple submapper[macopy]
         - bug fix : skip t/010_flavor.t when git is not installed

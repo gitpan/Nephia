@@ -2,7 +2,10 @@ package Nephia;
 use strict;
 use warnings;
 use File::Spec;
-our $VERSION = '0.30';
+our $VERSION = '0.31';
+
+use Nephia::Core;
+use Module::Load ();
 
 sub import {
     my ($class, %opts) = @_;
@@ -11,24 +14,11 @@ sub import {
                   ( $opts{plugins} )
     ;
 
-    no strict 'refs';
-
     my $caller = caller;
-    use Nephia::Core;
+    Nephia::Core->export_to_level(1);
 
-    for my $func (grep { $_ =~ /^[a-z]/ && $_ ne 'import' } keys %{'Nephia::Core::'}) {
-        *{$caller.'::'.$func} = *{'Nephia::Core::'.$func};
-    }
-
-    for my $plugin ( map {"Nephia::Plugin::$_"} @plugins ) {
-        require File::Spec->catfile(split/::/, $plugin.'.pm');
-        {
-            no warnings 'once'; ### suppress warning for fetching import coderef
-            $plugin->import if *{$plugin."::import"}{CODE};
-        }
-        for my $func (grep { $_ =~ /^[a-z]/ && $_ ne 'import' } keys %{$plugin.'::'}) {
-            *{$caller.'::'.$func} = *{$plugin.'::'.$func};
-        }
+    for my $plugin ( Nephia::Core::normalize_plugin_names(@plugins) ) {
+        Nephia::Core::export_plugin_functions($plugin, $caller);
     }
 }
 
@@ -65,7 +55,7 @@ First argument is path for mount a controller. This must be string.
 Second argument is controller-logic. This must be code-reference.
 
 In controller-logic, you may get Plack::Request object as first-argument,
-and controller-logic must return response-value as hash-reference or Plack::Response object.
+and controller-logic must return response-value as hash-reference or Nephia::Response object.
 
 =head2 Basic controller - Makes JSON response
 
@@ -118,7 +108,7 @@ If you not specified C<charset>, it will be 'UTF-8'.
       };
   };
 
-"res" function returns Plack::Response object with some DSL.
+"res" function returns Nephia::Response object with some DSL.
 
 You may specify code-reference that's passed to res() returns some value. These values are passed into arrayref that is as plack response.
 
@@ -182,28 +172,31 @@ Please see Plack::Response's documentation for more detail.
 
 It's easy. Call "path" function by package instead of a coderef.
 
-  path '/otherapp' => 'OtherApp';
+  package MyApp;
+  use Nephia;
 
-in OtherApp:
+  path '/childapp' => 'ChildApp';
 
-  package OtherApp;
+in MyApp/ChildApp.pm:
+
+  package MyApp::ChildApp;
   use Nephia;
 
   get '/message' => sub {
-      message => 'this is other app!'
+      message => 'this is child app!'
   };
 
-This controller mapped to "/otherapp/message".
+This controller mapped to "/childapp/message".
 
-Can use "+" prefix in package name. This prefix replace to package of myself.
+Can use "+" prefix in package name. This syntax feature is to use absolute package name.
 
 Example:
 
   package MyApp;
 
-  path '/childapp' => '+Child';
+  path '/otherapp' => '+OtherApp';
 
-"/chilapp" connect to "MyApp::Child".
+"/otherapp" connect to "OtherApp".
 
 Support to multiple path to SubApp.
 
@@ -214,7 +207,7 @@ Example:
   path '/subapp1' => 'SubApp';
   path '/subapp2' => 'SubApp';
 
-The SubApp connected to "/subapp1" and "/subapp2".
+The MyApp::SubApp connected to "/subapp1" and "/subapp2".
 
 =head2 Using Cookie
 
@@ -333,7 +326,7 @@ Return Plack::Request object. You can call this function in code-reference that 
 
 =head2 res $coderef
 
-Return Plack::Response object with some DSL.
+Return Nephia::Response object with some DSL.
 
 =head2 param 
 

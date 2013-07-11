@@ -6,6 +6,7 @@ requires 'Router::Simple';
 requires 'Text::MicroTemplate::File';
 requires 'URL::Encode';
 requires 'parent';
+requires 'Module::Load';
 
 recommends 'URL::Encode::XS';
 recommends 'Config::Micro', '0.02';

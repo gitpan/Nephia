@@ -12,10 +12,10 @@ eg/lib/MyApp/Oreore.pm
 eg/lib/MyApp/Root.pm
 eg/view/hoge.tx
 lib/Nephia.pm
-lib/Nephia/ClassLoader.pm
 lib/Nephia/Core.pm
 lib/Nephia/MetaTemplate.pm
 lib/Nephia/Request.pm
+lib/Nephia/Response.pm
 lib/Nephia/Setup.pm
 lib/Nephia/Setup/Base.pm
 lib/Nephia/Setup/Default.pm
@@ -23,7 +23,6 @@ lib/Nephia/Setup/Git.pm
 lib/Nephia/View.pm
 lib/Nephia/View/MicroTemplate.pm
 t/000_compile.t
-t/007_classloader.t
 t/008_meta_template.t
 t/009_setup.t
 t/010_flavor.t
@@ -39,6 +38,8 @@ t/019_submapper.t
 t/020_base_dir.t
 t/021_cookie.t
 t/100_request.t
+t/101_core.t
+t/102_response.t
 t/Util.pm
 t/nephia-test_app/app.psgi
 t/nephia-test_app/cpanfile

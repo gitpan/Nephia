@@ -32,15 +32,15 @@ no_index:
 provides:
   Nephia:
     file: lib/Nephia.pm
-    version: 0.30
-  Nephia::ClassLoader:
-    file: lib/Nephia/ClassLoader.pm
+    version: 0.31
   Nephia::Core:
     file: lib/Nephia/Core.pm
   Nephia::MetaTemplate:
     file: lib/Nephia/MetaTemplate.pm
   Nephia::Request:
     file: lib/Nephia/Request.pm
+  Nephia::Response:
+    file: lib/Nephia/Response.pm
   Nephia::Setup:
     file: lib/Nephia/Setup.pm
   Nephia::Setup::Base:
@@ -60,6 +60,7 @@ requires:
   Class::Accessor::Lite: 0
   File::pushd: 0
   JSON: 0
+  Module::Load: 0
   Plack: 0
   Router::Simple: 0
   Text::MicroTemplate::File: 0
@@ -69,12 +70,12 @@ resources:
   bugtracker: https://github.com/ytnobody/Nephia/issues
   homepage: https://github.com/ytnobody/Nephia
   repository: git://github.com/ytnobody/Nephia.git
-version: 0.30
+version: 0.31
 x_contributors:
-  - 'mackee <macopy123@gmail.com>'
-  - 'Masayuki Matsuki <y.songmu@gmail.com>'
   - 'moznion <moznion@gmail.com>'
   - 'ichigotake <k.wisiiy@gmail.com>'
-  - 'papix <mail@papix.net>'
   - 'mackee <macopy123[attttt]gmai.com>'
+  - 'papix <mail@papix.net>'
+  - 'mackee <macopy123@gmail.com>'
+  - 'Masayuki Matsuki <y.songmu@gmail.com>'
   - 'ytnobody <ytnobody@gmail.com>'

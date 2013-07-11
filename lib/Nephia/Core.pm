@@ -2,23 +2,24 @@ package Nephia::Core;
 use strict;
 use warnings;
 
-use Exporter 'import';
+use parent 'Exporter';
 use Nephia::Request;
-use Plack::Response;
+use Nephia::Response;
 use Plack::Builder;
 use Router::Simple;
 use Nephia::View;
-use Nephia::ClassLoader;
 use JSON ();
-use FindBin;
 use Encode;
 use Carp qw/croak/;
+use Scalar::Util qw/blessed/;
+
+use Module::Load ();
 
 our @EXPORT = qw[ get post put del path req res param path_param nip run config app nephia_plugins base_dir cookie set_cookie ];
 our $MAPPER = Router::Simple->new;
 our $VIEW;
 our $CONFIG = {};
-our $CHARSET = 'UTF-8';
+our $CHARSET = Encode::find_encoding('UTF-8');
 our $APP_MAP = {};
 our $APP_CODE = {};
 our $APP_ROOT;
@@ -72,14 +73,14 @@ sub _path {
                         json_res( $res )
                     ;
                 }
-                elsif ( ref $res eq 'Plack::Response' ) {
+                elsif ( blessed $res && $res->isa('Plack::Response') ) {
                     $rtn = $res->finalize;
                 }
                 else {
                     $rtn = $res;
                 }
                 if ($COOKIE) {
-                    my $res_obj = Plack::Response->new(@$rtn);
+                    my $res_obj = Nephia::Response->new(@$rtn);
                     for my $key (keys %$COOKIE) {
                         $res_obj->cookies->{$key} = $COOKIE->{$key};
                     }
@@ -96,26 +97,19 @@ sub _path {
 sub _submap {
     my ( $path, $package, $base_class ) = @_;
 
-    $package =~ s/^\+/$base_class\::/g;
+    if (!($package =~ s/^\+//g)) {
+        $package = join '::', $base_class, $package;
+    }
 
-    eval {
-        $APP_MAP->{$package}->{path} = $path;
-        if (Nephia::ClassLoader->is_loaded($package)) {
-            for my $suffix_path (keys %{$APP_CODE->{$package}}) {
-                my $app_code = $APP_CODE->{$package}->{$suffix_path};
-                _path ($suffix_path, $app_code->{code}, $app_code->{methods}, $package);
-            }
+    $APP_MAP->{$package}->{path} = $path;
+    if (!$APP_CODE->{$package}) {
+        Module::Load::load($package, 'import');
+    }
+    else {
+         for my $suffix_path (keys %{$APP_CODE->{$package}}) {
+            my $app_code = $APP_CODE->{$package}->{$suffix_path};
+            _path ($suffix_path, $app_code->{code}, $app_code->{methods}, $package);
         }
-        else {
-            Nephia::ClassLoader->load($package);
-            import $package;
-        }
-    };
-    if ($@) {
-        my $e = $@;
-        chomp $e;
-        $e =~ s/\ at\ .*$//g;
-        croak $e;
     }
 }
 
@@ -152,7 +146,7 @@ sub path ($@) {
 
 sub res (&) {
     my $code = shift;
-    my $res = Plack::Response->new(200);
+    my $res = Nephia::Response->new(200);
     $res->content_type('text/html');
     {
         no strict qw[ refs subs ];
@@ -181,10 +175,13 @@ sub res (&) {
 
 sub run {
     my $class = shift;
+    my $base_dir = base_dir($class);
     $CONFIG = scalar @_ > 1 ? +{ @_ } : $_[0];
-    $VIEW = Nephia::View->new( $CONFIG->{view} ? %{$CONFIG->{view}} : () );
+    $VIEW = Nephia::View->new( ( $CONFIG->{view} ? %{$CONFIG->{view}} : () ), template_path => File::Spec->catdir($base_dir, 'view') );
+
+    my $root = File::Spec->catfile($base_dir, 'root');
     return builder {
-        enable "Static", root => "$FindBin::Bin/root/", path => qr{^/static/};
+        enable "Static", root => $root, path => qr{^/static/};
         $class->app;
     };
 }
@@ -243,26 +240,31 @@ sub config (@) {
 
 sub nephia_plugins (@) {
     my $caller = caller();
-    for my $plugin ( map {'Nephia::Plugin::'.$_} @_ ) {
-        _export_plugin_functions($plugin, $caller);
+    for my $plugin ( normalize_plugin_names(@_) ) {
+        export_plugin_functions($plugin, $caller);
     }
 };
 
-sub _export_plugin_functions {
+sub normalize_plugin_names {
+    map { /^\+/ ? do {(my $p = $_) =~ s/^\+//; $p} : "Nephia::Plugin::$_" } @_;
+}
+
+sub export_plugin_functions {
     my ($plugin, $caller) = @_;
-    my $plugin_path = File::Spec->catfile(split('::', $plugin)).'.pm';
-    require $plugin_path;
+
+    Module::Load::load($plugin, 'import');
     {
         no strict 'refs';
-        $plugin->import if *{$plugin."::import"}{CODE};
-        my @funcs = grep { $_ =~ /^[a-z]/ && $_ ne 'import' } keys %{$plugin.'::'};
-        *{$caller.'::'.$_} = *{$plugin.'::'.$_} for @funcs;
+        for my $func ( @{"${plugin}::EXPORT"} ){
+            *{"$caller\::$func"} = $plugin->can($func);
+        }
     }
 }
 
 sub base_dir {
-    my ($proto) = caller();
+    my $proto = shift || caller;
 
+    $proto =~ s!::!/!g;
     my $base_dir;
     if (my $libpath = $INC{"$proto.pm"}) {
         $libpath =~ s!\\!/!g; # for win32

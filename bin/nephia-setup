@@ -7,14 +7,17 @@ use File::Spec;
 use Getopt::Long;
 
 my $flavor = 'Default';
+my $plugin = '';
+my @plugins = ();
 
 my $config = do File::Spec->catfile($ENV{HOME}, '.nephia-setup');
-if (defined $config) {
-    $flavor = join ',', @{$config->{flavor}};
-}
+
+$flavor = join ',', @{$config->{flavor}} if defined $config->{flavor};
+@plugins = @{$config->{plugin}} if defined $config->{plugin};
 
 GetOptions(
     "flavor=s" => \$flavor,
+    "plugin=s" => \$plugin,
     "v|version"  => \&version,
 );
 
@@ -22,9 +25,11 @@ my $appname = shift @ARGV || '';
 help() unless $appname =~ /^\w+/;
 
 my @flavors = $flavor =~ /,/ ? split(/,/, $flavor) : ( $flavor );
+push @plugins, split /,/, $plugin;
 
 my $setup = Nephia::Setup->new(
     flavor => [@flavors],
+    plugin => [@plugins],
     appname => $appname,
 );
 $setup->create;

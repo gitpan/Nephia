@@ -2,12 +2,11 @@ package Nephia::View::MicroTemplate;
 use strict;
 use warnings;
 use Text::MicroTemplate::File;
-use File::Spec;
 use Carp;
 
 sub new {
     my ( $class, %opts ) = @_;
-    $opts{include_path} ||= ["$FindBin::Bin/view"];
+    $opts{include_path} ||= [ delete $opts{template_path} ];
     my $mt = Text::MicroTemplate::File->new(%opts);
     bless {mt => $mt}, $class;
 }

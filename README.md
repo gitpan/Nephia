@@ -26,7 +26,7 @@ First argument is path for mount a controller. This must be string.
 Second argument is controller-logic. This must be code-reference.
 
 In controller-logic, you may get Plack::Request object as first-argument,
-and controller-logic must return response-value as hash-reference or Plack::Response object.
+and controller-logic must return response-value as hash-reference or Nephia::Response object.
 
 ## Basic controller - Makes JSON response
 
@@ -79,7 +79,7 @@ If you not specified `charset`, it will be 'UTF-8'.
         };
     };
 
-"res" function returns Plack::Response object with some DSL.
+"res" function returns Nephia::Response object with some DSL.
 
 You may specify code-reference that's passed to res() returns some value. These values are passed into arrayref that is as plack response.
 
@@ -131,28 +131,31 @@ Please see Plack::Response's documentation for more detail.
 
 It's easy. Call "path" function by package instead of a coderef.
 
-    path '/otherapp' => 'OtherApp';
+    package MyApp;
+    use Nephia;
 
-in OtherApp:
+    path '/childapp' => 'ChildApp';
 
-    package OtherApp;
+in MyApp/ChildApp.pm:
+
+    package MyApp::ChildApp;
     use Nephia;
 
     get '/message' => sub {
-        message => 'this is other app!'
+        message => 'this is child app!'
     };
 
-This controller mapped to "/otherapp/message".
+This controller mapped to "/childapp/message".
 
-Can use "+" prefix in package name. This prefix replace to package of myself.
+Can use "+" prefix in package name. This syntax feature is to use absolute package name.
 
 Example:
 
     package MyApp;
 
-    path '/childapp' => '+Child';
+    path '/otherapp' => '+OtherApp';
 
-"/chilapp" connect to "MyApp::Child".
+"/otherapp" connect to "OtherApp".
 
 Support to multiple path to SubApp.
 
@@ -163,7 +166,7 @@ Example:
     path '/subapp1' => 'SubApp';
     path '/subapp2' => 'SubApp';
 
-The SubApp connected to "/subapp1" and "/subapp2".
+The MyApp::SubApp connected to "/subapp1" and "/subapp2".
 
 ## Using Cookie
 
@@ -282,7 +285,7 @@ Return Plack::Request object. You can call this function in code-reference that 
 
 ## res $coderef
 
-Return Plack::Response object with some DSL.
+Return Nephia::Response object with some DSL.
 
 ## param 
 

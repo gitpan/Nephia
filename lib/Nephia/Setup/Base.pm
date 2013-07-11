@@ -14,6 +14,8 @@ use Nephia::MetaTemplate;
 sub new {
     my ( $class, %opts ) = @_;
 
+    my %plugin = map { 'Nephia::Plugin::'.$_ => '0' } @{$opts{plugin}};
+
     my $appname = $opts{appname};
     $appname =~ s/::/-/g;
     $opts{approot} = File::Spec->catdir('.', $appname);
@@ -24,6 +26,7 @@ sub new {
         required_modules => {
             'Nephia'        => '0',
             'Config::Micro' => '0.02',
+            %plugin,
         },
         additional_methods => {},
     }, $class;
