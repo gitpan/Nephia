@@ -4,7 +4,7 @@
       "C<ytnobody> <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.5.5",
+   "generated_by" : "Minilla/v0.5.3",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -70,7 +70,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.31"
+         "version" : "0.32"
       },
       "Nephia::Core" : {
          "file" : "lib/Nephia/Core.pm"
@@ -114,7 +114,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.31",
+   "version" : "0.32",
    "x_contributors" : [
       "moznion <moznion@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",

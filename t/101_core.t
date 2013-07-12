@@ -14,9 +14,7 @@ can_ok __PACKAGE__, qw/
    cookie set_cookie
 /;
 
-my @raw    = qw/Hoge +Piyo::Piyo/;
-my @plugins = Nephia::Core::normalize_plugin_names(@raw);
-is_deeply \@plugins, [qw/Nephia::Plugin::Hoge Piyo::Piyo/];
-is_deeply \@raw,     [qw/Hoge +Piyo::Piyo/];
+is Nephia::Core::_normalize_plugin_name('Hoge'), 'Nephia::Plugin::Hoge';
+is Nephia::Core::_normalize_plugin_name('+Piyo::Piyo'), 'Piyo::Piyo';
 
 done_testing;
