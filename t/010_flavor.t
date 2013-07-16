@@ -6,6 +6,9 @@ use File::Which;
 unless ( which('git') ) {
     plan skip_all => 'A setup flavor "Git" requires "git" command';
 }
+if ($^O eq 'MSWin32') {
+    plan skip_all => 'Git flavor test is skipped in Windows';
+}
 
 use Nephia::Setup;
 use Capture::Tiny 'capture';

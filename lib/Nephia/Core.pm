@@ -262,11 +262,12 @@ sub _export_plugin_functions {
     my ($plugin, $pkg, $opt) = @_;
 
     Module::Load::load($plugin);
+
     $plugin->import if $plugin->can('import');
     $plugin->load($pkg, $opt) if $plugin->can('load');
     {
         no strict 'refs';
-        no warnings 'redefine';
+        no warnings qw/redefine prototype/;
         for my $func ( @{"${plugin}::EXPORT"} ){
             *{"$pkg\::$func"} = $plugin->can($func);
         }
