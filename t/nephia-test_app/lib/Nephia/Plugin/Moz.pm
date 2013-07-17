@@ -6,9 +6,15 @@ use JSON;
 
 our $WORD;
 
+our @EXPORT = qw/appname/;
+
 sub load {
     my ($class, $app, $opt) = @_;
     $WORD = $opt->{word};
+}
+
+sub appname {
+    return context('app');
 }
 
 sub process_env {
@@ -28,10 +34,10 @@ sub process_response {
 
 sub process_content {
     my $content = shift;
-    $content =~ s/o/i/g;
     my $json = JSON->new->utf8;
     my $moz = context('moznion');
     my $data = $json->decode($content);
+    $data->{message} =~ s/o/i/g;
     $data->{message} .= $moz;
     return $json->encode($data);
 }

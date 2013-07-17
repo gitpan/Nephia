@@ -8,6 +8,7 @@ path '/' => sub {
     return {
         message => 'foo',
         params  => param('foo'),
+        appname => appname,
     };
 };
 

@@ -22,6 +22,7 @@ test_psgi
             my $json = JSON->new->utf8->decode($res->content);
             is $json->{params}, 'bar', 'process_request';
             is $json->{message}, 'fii職質', 'process_content';
+            is $json->{appname}, 'Nephia::TestPluginApp2nd';
         };
     }
 ;

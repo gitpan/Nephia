@@ -24,7 +24,7 @@ Nephia::GlobalVars->set(
     mapper   => Router::Simple->new,
     view     => undef,
     config   => {},
-    charset  => Encode::find_encoding('UTF-8'),
+    charset  => Encode::find_encoding('UTF-8')->mime_name,
     app_map  => {},
     app_code => {},
     app_root => undef,
@@ -34,6 +34,7 @@ Nephia::GlobalVars->set(
 sub _path {
     my ( $path, $code, $methods, $target_class ) = @_;
     my $caller = caller();
+    my $app_class = caller(1);
     my ($app_map, $app_code, $mapper) = Nephia::GlobalVars->get(qw/app_map app_code mapper/);
 
     if (
@@ -62,6 +63,7 @@ sub _path {
             action => sub {
                 my ($env, $path_param) = @_;
                 local $CONTEXT = Nephia::Context->new;
+                $CONTEXT->{app} = $app_class;
                 my $req = _process_request($env, $path_param);
                 no strict qw[ refs subs ];
                 no warnings qw[ redefine ];
@@ -181,12 +183,10 @@ sub del ($&) {
 sub path ($@) {
     my ( $path, $code, $methods ) = @_;
     my $caller = caller();
-    if ( ref $code eq "CODE" ) {
-        _path( $path, $code, $methods, $caller );
-    }
-    else {
-        _submap( $path, $code, $caller );
-    }
+    ref($code) eq "CODE" ? 
+        _path($path, $code, $methods, $caller) :
+        _submap($path, $code, $caller)
+    ;
 }
 
 sub res (&) {
