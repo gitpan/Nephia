@@ -214,60 +214,11 @@ And, you can access to these config in your application as following.
 
 You can look static-files that is into root directory via HTTP.
 
-# USING PLUGINS
+# PLUGINS
 
-You may use plugins for Nephia, as like followings.
+You may use plugins for Nephia.
 
-    use Nephia plugins => [qw[Response::YAML Response::XML]];
-
-or
-
-    BEGIN {
-        use Nephia;
-        nephia_plugin 'Response::YAML', 'Response::XML';
-    }
-
-# HOW TO DEVELOP Nephia PLUGIN
-
-The only rule, namespace of new module must begins in "Nephia::Plugin::".
-
-If you want to export subroutines, those name must begin in lower alphabetic chars, and it must not be "import".
-
-import() will execute when plugin is loaded.
-
-For example.
-
-    package Nephia::Plugin::Bark;
-    use strict;
-    use warnings;
-
-    sub import {
-        my ($class) = @_;
-        ... ### Be execute when plugin is loaded.
-    }
-
-    sub bark () {
-        return [200, [], ['Bark!']];
-    }
-
-    sub barkbark (@) {
-        return [200, [], [join(' ', 'Bark', @_)]];
-    }
-
-    1;
-
-You can use plugin in above, as like followings.
-
-    package Your::App;
-    use Nephia plugins => ['Bark'];
-
-    path '/bark' => sub {
-        bark; # 'Bark!'
-    };
-
-    path '/barkbark' => sub {
-        barkbark 'hoge', 'fuga'; # 'Bark hoge fuga'
-    };
+See [Nephia::Plugin](http://search.cpan.org/perldoc?Nephia::Plugin) for more detail about plugin.
 
 # FUNCTIONS
 

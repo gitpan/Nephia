@@ -12,8 +12,11 @@ eg/lib/MyApp/Oreore.pm
 eg/lib/MyApp/Root.pm
 eg/view/hoge.tx
 lib/Nephia.pm
+lib/Nephia/Context.pm
 lib/Nephia/Core.pm
+lib/Nephia/GlobalVars.pm
 lib/Nephia/MetaTemplate.pm
+lib/Nephia/Plugin.pm
 lib/Nephia/Request.pm
 lib/Nephia/Response.pm
 lib/Nephia/Setup.pm
@@ -23,6 +26,8 @@ lib/Nephia/Setup/Git.pm
 lib/Nephia/View.pm
 lib/Nephia/View/MicroTemplate.pm
 t/000_compile.t
+t/006_context.t
+t/007_global_vars.t
 t/008_meta_template.t
 t/009_setup.t
 t/010_flavor.t
@@ -35,6 +40,7 @@ t/016_using_multibyte.t
 t/017_opt_methods.t
 t/018_plugin.t
 t/018_plugin2.t
+t/018_plugin_with_process_methods.t
 t/019_submapper.t
 t/020_base_dir.t
 t/021_cookie.t
@@ -49,9 +55,11 @@ t/nephia-test_app/lib/Nephia/ParentApp.pm
 t/nephia-test_app/lib/Nephia/ParentApp/ChildApp.pm
 t/nephia-test_app/lib/Nephia/Plugin/Bark.pm
 t/nephia-test_app/lib/Nephia/Plugin/Macopy.pm
+t/nephia-test_app/lib/Nephia/Plugin/Moz.pm
 t/nephia-test_app/lib/Nephia/SubApp.pm
 t/nephia-test_app/lib/Nephia/TestApp.pm
 t/nephia-test_app/lib/Nephia/TestPluginApp.pm
+t/nephia-test_app/lib/Nephia/TestPluginApp2nd.pm
 t/nephia-test_app/view/index.html
 xt/02_perlcritic.t
 xt/perlcriticrc

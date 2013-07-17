@@ -28,7 +28,6 @@ sub new {
             'Config::Micro' => '0.02',
             %plugin,
         },
-        additional_methods => {},
     }, $class;
 }
 
@@ -128,11 +127,23 @@ sub psgi_file {
 
 sub app_class_file {
     my $self = shift;
+
+    my @plugins = sort {
+        $a cmp $b
+    } map {
+        (my $module = $_) =~ s/^Nephia::Plugin:://; $module
+    } grep {
+        $_ =~ /^Nephia::Plugin::/
+    } keys %{$self->{required_modules}};
+
+    my $plugins = @plugins == 0 ? '' : " plugins => [qw/\n\t" . (join "\n\t", @plugins) . "\n/]";
+
     my $approot = $self->approot;
     my $appname = $self->appname;
     my $body = $self->templates->{app_class_file};
     $body =~ s[\$approot][$approot]g;
     $body =~ s[\$appname][$appname]g;
+    $body =~ s[\$plugins][$plugins]g;
     $body =~ s[:::][=]g;
     my $dir = $self->dir($self->pmpath);
     $self->mkpath($dir);
@@ -239,7 +250,7 @@ app_class_file
 package $appname;
 use strict;
 use warnings;
-use Nephia;
+use Nephia$plugins;
 
 our $VERSION = 0.01;
 

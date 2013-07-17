@@ -4,7 +4,7 @@
       "C<ytnobody> <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.5.6",
+   "generated_by" : "Minilla/v0.5.5",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -70,13 +70,22 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.33"
+         "version" : "0.34"
+      },
+      "Nephia::Context" : {
+         "file" : "lib/Nephia/Context.pm"
       },
       "Nephia::Core" : {
          "file" : "lib/Nephia/Core.pm"
       },
+      "Nephia::GlobalVars" : {
+         "file" : "lib/Nephia/GlobalVars.pm"
+      },
       "Nephia::MetaTemplate" : {
          "file" : "lib/Nephia/MetaTemplate.pm"
+      },
+      "Nephia::Plugin" : {
+         "file" : "lib/Nephia/Plugin.pm"
       },
       "Nephia::Request" : {
          "file" : "lib/Nephia/Request.pm"
@@ -114,14 +123,14 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.33",
+   "version" : "0.34",
    "x_contributors" : [
       "moznion <moznion@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
       "mackee <macopy123[attttt]gmai.com>",
-      "papix <mail@papix.net>",
       "Masayuki Matsuki <y.songmu@gmail.com>",
       "mackee <macopy123@gmail.com>",
+      "papix <mail@papix.net>",
       "ytnobody / satoshi azuma <ytnobody@gmail.com>"
    ]
 }
