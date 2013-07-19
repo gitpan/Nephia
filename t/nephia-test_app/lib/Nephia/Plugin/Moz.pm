@@ -5,13 +5,7 @@ use utf8;
 use JSON;
 use Encode;
 
-our $WORD;
 our @EXPORT = qw/appname/;
-
-sub load {
-    my ($class, $app, $opt) = @_;
-    $WORD = $opt->{word};
-}
 
 sub appname {
     return context('app');
@@ -43,7 +37,8 @@ sub process_env {
 
 sub process_response {
     my $res = shift;
-    $res->header('X-Moz' => $WORD);
+    my $word = plugin_config('word');
+    $res->header('X-Moz' => $word);
     my $moz = context('moznion');
     context(moznion => $moz.'質');
     return $res;

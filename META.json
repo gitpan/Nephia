@@ -70,7 +70,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.36"
+         "version" : "0.37"
       },
       "Nephia::Context" : {
          "file" : "lib/Nephia/Context.pm"
@@ -126,7 +126,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.36",
+   "version" : "0.37",
    "x_contributors" : [
       "moznion <moznion@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
@@ -134,6 +134,6 @@
       "Masayuki Matsuki <y.songmu@gmail.com>",
       "mackee <macopy123@gmail.com>",
       "papix <mail@papix.net>",
-      "ytnobody <ytnobody@gmail.com>"
+      "ytnobody / satoshi azuma <ytnobody@gmail.com>"
    ]
 }

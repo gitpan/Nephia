@@ -2,7 +2,7 @@ package Nephia;
 use strict;
 use warnings;
 use File::Spec;
-our $VERSION = '0.36';
+our $VERSION = '0.37';
 
 use Nephia::Core;
 use Module::Load ();

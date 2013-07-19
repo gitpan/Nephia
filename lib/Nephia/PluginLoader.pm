@@ -28,6 +28,7 @@ sub _export_plugin_functions {
         no warnings qw/redefine prototype/;
 
         *{$plugin.'::context'} = *Nephia::Core::context;
+        *{$plugin.'::plugin_config'} = sub (;$) { $_[0] ? $opt->{$_[0]} : $opt };
         $plugin->import           if $plugin->can('import');
         $plugin->load($pkg, $opt) if $plugin->can('load');
 

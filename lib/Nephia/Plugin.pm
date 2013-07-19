@@ -49,13 +49,14 @@ For example.
   }
 
   sub load {
-      my ($class, $app_class, $plugin_option) = @_;
+      my ($class, $app_class, $plugin_config) = @_;
       ### Execute after import()
-      context(sound => $plugin_option->{sound});  # set sound into context
+      ...
   }
 
   sub before_action {
       my ($env, $path_param, @action_chain) = @_;
+      context(sound => plugin_config('sound'));  # set sound into context
       my $req = context('req');
       if (my $id = $req->param('id')) {
           return [403, [], ['You denied!'] ] if $id eq 'ytnobody';  # deny ytnobody :(
@@ -128,6 +129,24 @@ Rewrite response object after response was built.
 =item $content = process_content( $raw_content );
 
 Rewrite content before responde response.
+
+=back
+
+=head1 Helper DSL for development plugins
+
+=over 4
+
+=item $specified_conf_value = plugin_config($keyname);
+
+Returns specified value of plugin config 
+
+=item $stored_value = context($keyname);
+
+Returns specified value that stored in context
+
+=item context($keyname => $value);
+
+Store $value into context that is labeled specified keyname
 
 =back
 

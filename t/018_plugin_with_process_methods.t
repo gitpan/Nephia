@@ -24,7 +24,7 @@ test_psgi
             my $json = JSON->new->utf8->decode($res->content);
             is $json->{params}, 'bar', 'process_env';
             is $json->{message}, '豊崎愛生さんと八王子で職質カジュアル', 'process_content';
-            is $json->{appname}, 'Nephia::TestPluginApp2nd';
+            is $json->{appname}, 'Nephia::TestPluginApp2nd', 'context("app") is Nephia::TestPluginApp2nd';
         };
 
         subtest "before_action" => sub {

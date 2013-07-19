@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 use Nephia plugins => [qw/Bark/, 'Macopy' => {wei => 'うぇーい'}];
 
-our $VERSION = 0.36;
+our $VERSION = 0.37;
 
 path '/bark' => sub {
     bark();
