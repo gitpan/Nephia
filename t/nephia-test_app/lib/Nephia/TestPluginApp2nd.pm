@@ -5,10 +5,13 @@ use utf8;
 use Nephia plugins => ['Moz' => {word => 'kieeeee'}];
 
 path '/' => sub {
+    my $req     = req;
+    my $param   = param('foo');
+    my $appname = appname;
     return {
-        message => 'foo',
-        params  => param('foo'),
-        appname => appname,
+        message => '八王子なう',
+        params  => $param,
+        appname => $appname,
     };
 };
 

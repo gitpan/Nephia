@@ -7,6 +7,12 @@ use Encode;
 use Hash::MultiValue;
 use URL::Encode;
 
+sub new {
+    my ($class, $env) = @_;
+    my $cloned_env = +{%$env}; ### Plack::Request has side-effect for $env :(
+    $class->SUPER::new($cloned_env);
+}
+
 sub uri {
     my $self = shift;
 

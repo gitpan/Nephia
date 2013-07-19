@@ -7,6 +7,7 @@ use Nephia::Request;
 use Nephia::Response;
 use Nephia::GlobalVars;
 use Nephia::Context;
+use Nephia::PluginLoader;
 use Plack::Builder;
 use Router::Simple;
 use Nephia::View;
@@ -33,54 +34,52 @@ Nephia::GlobalVars->set(
 
 sub _path {
     my ( $path, $code, $methods, $target_class ) = @_;
-    my $caller = caller();
+    my $caller    = caller();
     my $app_class = caller(1);
     my ($app_map, $app_code, $mapper) = Nephia::GlobalVars->get(qw/app_map app_code mapper/);
 
-    if (
-        $target_class
-        && exists $app_map->{$target_class}
-        && $app_map->{$target_class}{path}
-    ) {
+    my $sub_app_map = $target_class ? $app_map->{$target_class} : undef;
+    if ($sub_app_map && exists $sub_app_map->{path}) {
         # setup for submapping one more
-        $app_code->{$target_class} ||= {};
-        if (!exists $app_code->{$target_class}{$path}) {
-            $app_code->{$target_class}{$path} = {
-                code => $code,
-                methods => $methods,
-            };
-        }
+        $app_code->{$target_class}        ||= {};
+        $app_code->{$target_class}{$path} ||= {code => $code, methods => $methods};
 
-        $path =~ s!^/!!g;
-        my @paths = ($app_map->{$target_class}->{path});
-        push @paths, $path if length($path) > 0;
-        $path = join '/', @paths;
+        $path =~ s!^/!!;
+        $path = join('/', $path ? ( $sub_app_map->{path}, $path ) : ( $sub_app_map->{path} ));
     }
 
-    $mapper->connect(
-        $path,
-        {
-            action => sub {
-                my ($env, $path_param) = @_;
-                local $CONTEXT = Nephia::Context->new;
-                $CONTEXT->{app} = $app_class;
-                my $req = _process_request($env, $path_param);
-                no strict qw[ refs subs ];
-                no warnings qw[ redefine ];
-                local *{$caller."::req"} = sub{ $req };
-                local *{$caller."::param"} = sub (;$) {
-                    my $key = shift;
-                    $key ? $req->param($key) : $req->parameters;
-                };
-                local *{$caller."::path_param"} = sub (;$) { $req->path_param(shift) };
-                local *{$caller."::nip"} = sub (;$) { $req->nip(shift) };
-                my $res = $code->( $req, $req->path_param );
-                return _process_response($res);
-            },
-        },
-        $methods ? { method => $methods } : undef,
-    );
+    my $action = _build_action($app_class, $caller, $code);
+    $mapper->connect($path, {action => $action}, $methods ? {method => $methods} : undef);
+}
 
+sub before_action {
+    my ($env, $path_param, $next_action) = @_;
+    $next_action->($env, $path_param);
+}
+
+sub _build_action {
+    my ($app_class, $caller, $code) = @_;
+    my $action = sub {
+        my ($env, $path_param) = @_;
+        my $req = $CONTEXT->{req};
+        my $res = $code->( $req, $req->path_param );
+        return _process_response($res);
+    };
+    return sub { 
+        my ($env, $path_param) = @_;
+        local $CONTEXT = Nephia::Context->new;
+        $CONTEXT->set(app => $app_class, req =>_process_request($env, $path_param));
+        no strict qw[ refs subs ];
+        no warnings qw[ redefine ];
+        local *{$caller."::req"}        = sub      { context('req') };
+        local *{$caller."::nip"}        = sub (;$) { context('req')->nip(shift) };
+        local *{$caller."::path_param"} = sub (;$) { context('req')->path_param(shift) };
+        local *{$caller."::param"}      = sub (;$) {
+            $_[0] ? context('req')->param($_[0]) : context('req')->parameters;
+        };
+        my $res = before_action($env, $path_param, $action); 
+        return $res;
+    };
 }
 
 sub _process_request {
@@ -88,7 +87,7 @@ sub _process_request {
     my $env = process_env($raw_env);
     my $req = Nephia::Request->new($env);
     $req->{path_param} = $path_param;
-    $CONTEXT->{cookie} = $req->cookies;
+    $CONTEXT->set(cookie => $req->cookies);
     return $req;
 }
 
@@ -97,22 +96,18 @@ sub process_env {
     return $env;
 }
 
+sub _render_or_json {
+    my $raw_res = shift;
+    eval {$raw_res->{template}} ? render($raw_res) : json_res($raw_res);
+}
+
 sub _process_response {
     my $raw_res = shift;
-    my $res;
-    if ( ref $raw_res eq 'HASH' ) {
-        $res = Nephia::Response->new(@{
-            eval { $raw_res->{template} } ? 
-                render($raw_res) : 
-                json_res($raw_res)
-        });
-    }
-    elsif ( blessed $raw_res && $raw_res->isa('Plack::Response') ) {
-        $res = $raw_res;
-    }
-    else {
-        $res = Nephia::Response->new(@{$raw_res});
-    }
+    my $res = 
+        ref($raw_res) eq 'HASH' ? Nephia::Response->new( @{_render_or_json($raw_res)} ) :
+        blessed($raw_res) && $raw_res->isa('Plack::Response') ? $raw_res :
+        Nephia::Response->new(@{$raw_res})
+    ;
     if ($CONTEXT->{cookie}) {
         for my $key (keys %{$CONTEXT->{cookie}}) {
             $res->cookies->{$key} = $CONTEXT->{cookie}{$key};
@@ -239,7 +234,8 @@ sub app {
     return sub {
         my $env = shift;
         if ( my $p = $mapper->match($env) ) {
-            $p->{action}->($env, $p);
+            my $action = delete $p->{action};
+            $action->($env, $p);
         }
         else {
             [404, [], ['Not Found']];
@@ -283,55 +279,7 @@ sub config (@) {
 };
 
 sub nephia_plugins (@) {
-    my $caller = caller();
-    my @plugins = @_;
-
-    while (@plugins) {
-        my $plugin = shift @plugins;
-        $plugin = _normalize_plugin_name($plugin);
-
-        my $opt = $plugins[0] && ref $plugins[0] ? shift @plugins : undef;
-        _export_plugin_functions($plugin, $caller, $opt);
-    }
-
-};
-
-sub _normalize_plugin_name {
-    local $_ = shift;
-    /^\+/ ? s/^\+// && $_ : "Nephia::Plugin::$_";
-}
-
-sub _export_plugin_functions {
-    my ($plugin, $pkg, $opt) = @_;
-
-    Module::Load::load($plugin);
-    {
-        no strict 'refs';
-        no warnings qw/redefine prototype/;
-        *{$plugin.'::context'} = sub { 
-            my ($key, $val) = @_;
-            $CONTEXT->{$key} = $val if defined $key && defined $val;
-            return defined $key ? $CONTEXT->{$key} : $CONTEXT;
-        };
-
-        $plugin->import if $plugin->can('import');
-        $plugin->load($pkg, $opt) if $plugin->can('load');
-
-        for my $func ( @{"${plugin}::EXPORT"} ){
-            *{"$pkg\::$func"} = $plugin->can($func);
-        }
-        for my $func (qw/process_env process_response process_content/) {
-            my $plugin_func = $plugin->can($func);
-            if ($plugin_func) {
-                my $orig = \&{$func};
-                *$func = sub {
-                    my $in = shift;
-                    my $out = $plugin_func->($orig->($in));
-                    return $out;
-                }; 
-            }
-        }
-    }
+    goto do { Nephia::PluginLoader->can('load') };
 }
 
 sub base_dir {
@@ -364,5 +312,11 @@ sub cookie ($) {
     my $key = shift;
     $CONTEXT->{cookie}{$key};
 }
+
+sub context { 
+    my ($key, $val) = @_;
+    $Nephia::Core::CONTEXT->{$key} = $val if defined $key && defined $val;
+    return defined $key ? $Nephia::Core::CONTEXT->{$key} : $Nephia::Core::CONTEXT;
+};
 
 1;

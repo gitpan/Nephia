@@ -14,7 +14,4 @@ can_ok __PACKAGE__, qw/
    cookie set_cookie
 /;
 
-is Nephia::Core::_normalize_plugin_name('Hoge'), 'Nephia::Plugin::Hoge';
-is Nephia::Core::_normalize_plugin_name('+Piyo::Piyo'), 'Piyo::Piyo';
-
 done_testing;

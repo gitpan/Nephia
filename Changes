@@ -1,5 +1,16 @@
 Revision history for Perl extension Nephia
 
+0.36 2013-07-19T14:14:44Z
+        - refactor : modify some logic to more thin one
+        - refactor : split plugin loader logic into Nephia::PluginLoader
+        - refactor : add request object into context
+        - refactor : enable context in before_action
+        - feature : add before_action hook for plugins
+        - refactor : suppress side-effect that destroys $env by Plack::Request
+        - refactor : split action build logic into _build_action
+        - bug fix : add Config::Micro as deps. "Keep genleness for user" :)
+        - refactor : use trenary operator in _process_response
+
 0.35 2013-07-17T11:53:56Z
         - feature : add application class name into context with keyname "app"
         - bug fix : fix strange specification of charset in http-header

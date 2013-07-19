@@ -7,9 +7,9 @@ requires 'Text::MicroTemplate::File';
 requires 'URL::Encode';
 requires 'parent';
 requires 'Module::Load';
+requires 'Config::Micro', '0.02'; ### Use in Nephia::Setup::Base. Keep gentleness for user :)
 
 recommends 'URL::Encode::XS';
-recommends 'Config::Micro', '0.02';
 
 on configure => sub {
     requires 'CPAN::Meta';

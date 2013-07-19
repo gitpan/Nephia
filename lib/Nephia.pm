@@ -2,7 +2,7 @@ package Nephia;
 use strict;
 use warnings;
 use File::Spec;
-our $VERSION = '0.35';
+our $VERSION = '0.36';
 
 use Nephia::Core;
 use Module::Load ();
@@ -331,15 +331,17 @@ and Nephia contributors, hachioji.pm
 
 =head1 SEE ALSO
 
-Plack::Request
+L<Plack::Request>
 
-Plack::Response
+L<Plack::Response>
 
-Plack::Builder
+L<Plack::Builder>
 
-Text::MicroTemplate
+L<Text::MicroTemplate>
 
-JSON
+L<JSON>
+
+L<Nephia Home Page|http://nephia.github.io/>
 
 =head1 LICENSE
 

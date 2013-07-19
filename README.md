@@ -292,15 +292,17 @@ and Nephia contributors, hachioji.pm
 
 # SEE ALSO
 
-Plack::Request
+[Plack::Request](http://search.cpan.org/perldoc?Plack::Request)
 
-Plack::Response
+[Plack::Response](http://search.cpan.org/perldoc?Plack::Response)
 
-Plack::Builder
+[Plack::Builder](http://search.cpan.org/perldoc?Plack::Builder)
 
-Text::MicroTemplate
+[Text::MicroTemplate](http://search.cpan.org/perldoc?Text::MicroTemplate)
 
-JSON
+[JSON](http://search.cpan.org/perldoc?JSON)
+
+[Nephia Home Page](http://nephia.github.io/)
 
 # LICENSE
 

@@ -39,6 +39,7 @@ For example.
   package Nephia::Plugin::Bark;
   use strict;
   use warnings;
+  use Nephia::Request;
   
   our @EXPORT = qw/bark barkbark/;
 
@@ -51,6 +52,36 @@ For example.
       my ($class, $app_class, $plugin_option) = @_;
       ### Execute after import()
       context(sound => $plugin_option->{sound});  # set sound into context
+  }
+
+  sub before_action {
+      my ($env, $path_param, @action_chain) = @_;
+      my $req = context('req');
+      if (my $id = $req->param('id')) {
+          return [403, [], ['You denied!'] ] if $id eq 'ytnobody';  # deny ytnobody :(
+      }
+      my $next = shift(@chain_of_actions);
+      $next->($env, $path_param, @chain_of_actions);
+  }
+
+  sub process_env {
+      my $env = shift;
+      $env->{HTTP_X_OREORE} = 'oreore'; # inject into http request header
+      return $env;
+  }
+
+  sub process_response {
+      my $res = shift;
+      $res->header('X-Oreore' => 'soregashi soregashi'); # inject into http response header
+      return $res;
+  }
+
+  sub process_content {
+      my $content = shift;
+      # <b>...</b> to <span class="bold">...</span>
+      $content =~ s|<b>|<span class="bold">|g;
+      $content =~ s|</b>|</span>|g;
+      return $content;
   }
 
   sub bark () {
@@ -81,6 +112,10 @@ You can use plugin in above, as like followings.
 =head1 Hooks for development plugins
 
 =over 4
+
+=item $psgi_res = before_action( $env, $path_param, @chain_of_actions )
+
+Rewrite action when request incoming.
 
 =item $new_env = process_env( $origin_env );
 

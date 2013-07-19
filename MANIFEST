@@ -17,6 +17,7 @@ lib/Nephia/Core.pm
 lib/Nephia/GlobalVars.pm
 lib/Nephia/MetaTemplate.pm
 lib/Nephia/Plugin.pm
+lib/Nephia/PluginLoader.pm
 lib/Nephia/Request.pm
 lib/Nephia/Response.pm
 lib/Nephia/Setup.pm
@@ -47,6 +48,7 @@ t/021_cookie.t
 t/100_request.t
 t/101_core.t
 t/102_response.t
+t/103_plugin_loader.t
 t/Util.pm
 t/nephia-test_app/app.psgi
 t/nephia-test_app/cpanfile

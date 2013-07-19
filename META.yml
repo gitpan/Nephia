@@ -14,7 +14,7 @@ configure_requires:
   Module::Build: 0.38
   perl: 5.010001
 dynamic_config: 0
-generated_by: 'Minilla/v0.5.5, CPAN::Meta::Converter version 2.130880'
+generated_by: 'Minilla/v0.5.6, CPAN::Meta::Converter version 2.131560'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -32,7 +32,7 @@ no_index:
 provides:
   Nephia:
     file: lib/Nephia.pm
-    version: 0.35
+    version: 0.36
   Nephia::Context:
     file: lib/Nephia/Context.pm
   Nephia::Core:
@@ -43,6 +43,8 @@ provides:
     file: lib/Nephia/MetaTemplate.pm
   Nephia::Plugin:
     file: lib/Nephia/Plugin.pm
+  Nephia::PluginLoader:
+    file: lib/Nephia/PluginLoader.pm
   Nephia::Request:
     file: lib/Nephia/Request.pm
   Nephia::Response:
@@ -60,10 +62,10 @@ provides:
   Nephia::View::MicroTemplate:
     file: lib/Nephia/View/MicroTemplate.pm
 recommends:
-  Config::Micro: 0.02
   URL::Encode::XS: 0
 requires:
   Class::Accessor::Lite: 0
+  Config::Micro: 0.02
   File::pushd: 0
   JSON: 0
   Module::Load: 0
@@ -76,7 +78,7 @@ resources:
   bugtracker: https://github.com/ytnobody/Nephia/issues
   homepage: https://github.com/ytnobody/Nephia
   repository: git://github.com/ytnobody/Nephia.git
-version: 0.35
+version: 0.36
 x_contributors:
   - 'moznion <moznion@gmail.com>'
   - 'ichigotake <k.wisiiy@gmail.com>'

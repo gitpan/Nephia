@@ -4,7 +4,7 @@
       "C<ytnobody> <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.5.5",
+   "generated_by" : "Minilla/v0.5.6",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -42,11 +42,11 @@
       },
       "runtime" : {
          "recommends" : {
-            "Config::Micro" : "0.02",
             "URL::Encode::XS" : "0"
          },
          "requires" : {
             "Class::Accessor::Lite" : "0",
+            "Config::Micro" : "0.02",
             "File::pushd" : "0",
             "JSON" : "0",
             "Module::Load" : "0",
@@ -70,7 +70,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.35"
+         "version" : "0.36"
       },
       "Nephia::Context" : {
          "file" : "lib/Nephia/Context.pm"
@@ -86,6 +86,9 @@
       },
       "Nephia::Plugin" : {
          "file" : "lib/Nephia/Plugin.pm"
+      },
+      "Nephia::PluginLoader" : {
+         "file" : "lib/Nephia/PluginLoader.pm"
       },
       "Nephia::Request" : {
          "file" : "lib/Nephia/Request.pm"
@@ -123,7 +126,7 @@
          "web" : "https://github.com/ytnobody/Nephia"
       }
    },
-   "version" : "0.35",
+   "version" : "0.36",
    "x_contributors" : [
       "moznion <moznion@gmail.com>",
       "ichigotake <k.wisiiy@gmail.com>",
