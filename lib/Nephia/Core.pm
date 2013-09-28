@@ -1,322 +1,317 @@
 package Nephia::Core;
 use strict;
 use warnings;
-
-use parent 'Exporter';
 use Nephia::Request;
 use Nephia::Response;
-use Nephia::GlobalVars;
 use Nephia::Context;
-use Nephia::PluginLoader;
-use Plack::Builder;
-use Router::Simple;
-use Nephia::View;
-use JSON ();
-use Encode;
-use Carp qw/croak/;
-use Scalar::Util qw/blessed/;
-
+use Nephia::Chain;
+use Scalar::Util ();
 use Module::Load ();
 
-our @EXPORT = qw[ get post put del path req res param path_param nip run config app nephia_plugins base_dir cookie set_cookie ];
-our $CONTEXT;
-
-Nephia::GlobalVars->set(
-    mapper   => Router::Simple->new,
-    view     => undef,
-    config   => {},
-    charset  => Encode::find_encoding('UTF-8')->mime_name,
-    app_map  => {},
-    app_code => {},
-    app_root => undef,
-    json     => JSON->new->utf8,
-);
-
-sub _path {
-    my ( $path, $code, $methods, $target_class ) = @_;
-    my $caller    = caller();
-    my $app_class = caller(1);
-    my ($app_map, $app_code, $mapper) = Nephia::GlobalVars->get(qw/app_map app_code mapper/);
-
-    my $sub_app_map = $target_class ? $app_map->{$target_class} : undef;
-    if ($sub_app_map && exists $sub_app_map->{path}) {
-        # setup for submapping one more
-        $app_code->{$target_class}        ||= {};
-        $app_code->{$target_class}{$path} ||= {code => $code, methods => $methods};
-
-        $path =~ s!^/!!;
-        $path = join('/', $path ? ( $sub_app_map->{path}, $path ) : ( $sub_app_map->{path} ));
-    }
-
-    my $action = _build_action($app_class, $caller, $code);
-    $mapper->connect($path, {action => $action}, $methods ? {method => $methods} : undef);
+sub new {
+    my ($class, %opts) = @_;
+    $opts{caller}       ||= caller();
+    $opts{plugins}      ||= [];
+    $opts{action_chain}   = Nephia::Chain->new(namespace => 'Nephia::Action');
+    $opts{filter_chain}   = Nephia::Chain->new(namespace => 'Nephia::Filter');
+    $opts{builder_chain}  = Nephia::Chain->new(namespace => 'Nephia::Builder');
+    $opts{loaded_plugins} = Nephia::Chain->new(namespace => 'Nephia::Plugin', name_normalize => 0);
+    $opts{dsl}            = {};
+    my $self = bless {%opts}, $class;
+    $self->action_chain->append(Core => $class->can('_action'));
+    $self->_load_plugins;
+    return $self;
 }
 
-sub before_action {
-    my ($env, $path_param, $next_action) = @_;
-    $next_action->($env, $path_param);
-}
-
-sub _build_action {
-    my ($app_class, $caller, $code) = @_;
-    my $action = sub {
-        my ($env, $path_param) = @_;
-        my $req = $CONTEXT->{req};
-        my $res = $code->( $req, $req->path_param );
-        return _process_response($res);
-    };
-    return sub { 
-        my ($env, $path_param) = @_;
-        local $CONTEXT = Nephia::Context->new;
-        $CONTEXT->set(app => $app_class, req =>_process_request($env, $path_param));
-        no strict qw[ refs subs ];
-        no warnings qw[ redefine ];
-        local *{$caller."::req"}        = sub      { context('req') };
-        local *{$caller."::nip"}        = sub (;$) { context('req')->nip(shift) };
-        local *{$caller."::path_param"} = sub (;$) { context('req')->path_param(shift) };
-        local *{$caller."::param"}      = sub (;$) {
-            $_[0] ? context('req')->param($_[0]) : context('req')->parameters;
-        };
-        my $res = before_action($env, $path_param, $action); 
-        return $res;
+sub export_dsl {
+    my $self = shift; 
+    my $dummy_context = Nephia::Context->new;
+    $self->_load_dsl($dummy_context);
+    my $class = $self->caller_class;
+    no strict   qw/refs subs/;
+    no warnings qw/redefine/;
+    *{$class.'::run'} = sub (;%)  { my $subclass = shift; $self->run(@_) };
+    *{$class.'::app'} = sub (&) {
+        my $app = shift;
+        $self->{app} = $app;
     };
 }
 
-sub _process_request {
-    my ($raw_env, $path_param) = @_;
-    my $env = process_env($raw_env);
-    my $req = Nephia::Request->new($env);
-    $req->{path_param} = $path_param;
-    $CONTEXT->set(cookie => $req->cookies);
-    return $req;
-}
-
-sub process_env {
-    my $env = shift;
-    return $env;
-}
-
-sub _render_or_json {
-    my $raw_res = shift;
-    eval {$raw_res->{template}} ? render($raw_res) : json_res($raw_res);
-}
-
-sub _process_response {
-    my $raw_res = shift;
-    my $res = 
-        ref($raw_res) eq 'HASH' ? Nephia::Response->new( @{_render_or_json($raw_res)} ) :
-        blessed($raw_res) && $raw_res->isa('Plack::Response') ? $raw_res :
-        Nephia::Response->new(@{$raw_res})
-    ;
-    if ($CONTEXT->{cookie}) {
-        for my $key (keys %{$CONTEXT->{cookie}}) {
-            $res->cookies->{$key} = $CONTEXT->{cookie}{$key};
+sub _load_plugins {
+    my $self = shift;
+    my @plugins = (qw/Basic Cookie/, @{$self->{plugins}});
+    while ($plugins[0]) {
+        my $plugin_class = 'Nephia::Plugin::'. shift(@plugins);
+        my $conf = {};
+        if ($plugins[0]) {
+            $conf = shift(@plugins) if ref($plugins[0]) eq 'HASH';
         }
-    }
-    $res = process_response($res);
-    if (ref($res->body) eq 'ARRAY') {
-        $res->body->[0] = process_content($res->body->[0]);
-    }
-    else {
-        $res->body( process_content($res->body) );
-    }
-    return $res->finalize;
-}
-
-sub process_response {
-    my $res = shift;
-    return $res;
-}
-
-sub process_content {
-    my $content = shift;
-    return $content;
-}
-
-sub _submap {
-    my ( $path, $package, $base_class ) = @_;
-
-    my ($app_map, $app_code) = Nephia::GlobalVars->get(qw/app_map app_code/);
-
-    if (!($package =~ s/^\+//g)) {
-        $package = join '::', $base_class, $package;
-    }
-
-    $app_map->{$package}{path} = $path;
-    if (!$app_code->{$package}) {
-        Module::Load::load($package);
-        $package->import if $package->can('import');
-    }
-    else {
-         for my $suffix_path (keys %{$app_code->{$package}}) {
-            my $sub_app_code = $app_code->{$package}->{$suffix_path};
-            _path ($suffix_path, $sub_app_code->{code}, $sub_app_code->{methods}, $package);
-        }
+        $self->loaded_plugins->append($self->_load_plugin($plugin_class, $conf));
     }
 }
 
-sub get ($&) {
-    my ( $path, $code ) = @_;
-    _path( $path, $code, ['GET'] );
+sub loaded_plugins {
+    my $self = shift;
+    return wantarray ? $self->{loaded_plugins}->as_array : $self->{loaded_plugins};
 }
 
-sub post ($&) {
-    my ( $path, $code ) = @_;
-    _path( $path, $code, ['POST'] );
-}
-
-sub put ($&) {
-    my ( $path, $code ) = @_;
-    _path( $path, $code, ['PUT'] );
-}
-
-sub del ($&) {
-    my ( $path, $code ) = @_;
-    _path( $path, $code, ['DELETE'] );
-}
-
-sub path ($@) {
-    my ( $path, $code, $methods ) = @_;
-    my $caller = caller();
-    ref($code) eq "CODE" ? 
-        _path($path, $code, $methods, $caller) :
-        _submap($path, $code, $caller)
-    ;
-}
-
-sub res (&) {
-    my $code = shift;
-    my $res = Nephia::Response->new(200);
-    $res->content_type('text/html');
-    {
-        no strict qw[ refs subs ];
-        no warnings qw[ redefine ];
-        my $caller = caller();
-        map {
-            my $method = $_;
-            *{$caller.'::'.$method} = sub (@) {
-                $res->$method( @_ );
-                return;
-            };
-        } qw[
-            status headers body header
-            content_type content_length
-            content_encoding redirect cookies
-        ];
-        my @rtn = ( $code->() );
-        if ( @rtn ) {
-            $rtn[1] ||= [];
-            $rtn[2] ||= [];
-            $res = [@rtn];
-        }
-    }
-    return $res;
-}
-
-sub run {
-    my $class = shift;
-    my $base_dir = base_dir($class);
-    my $config = scalar @_ > 1 ? +{ @_ } : $_[0];
-    my $view = Nephia::View->new(($config->{view} ? %{$config->{view}} : ()), template_path => File::Spec->catdir($base_dir, 'view'));
-
-    Nephia::GlobalVars->set(config => $config, view => $view);
-
-    my $root = File::Spec->catfile($base_dir, 'root');
-    return builder {
-        enable "Static", root => $root, path => qr{^/static/};
-        $class->app;
-    };
+sub _load_plugin {
+    my ($self, $plugin, $opts) = @_;
+    $opts ||= {};
+    Module::Load::load($plugin) unless $plugin->isa('Nephia::Plugin');
+    my $obj = $plugin->new(app => $self, %$opts);
+    return $obj;
 }
 
 sub app {
-    my $class = shift;
-    my $mapper = Nephia::GlobalVars->get('mapper');
-    return sub {
-        my $env = shift;
-        if ( my $p = $mapper->match($env) ) {
-            my $action = delete $p->{action};
-            $action->($env, $p);
+    my $self = shift;
+    return $self->{app};
+}
+
+sub caller_class {
+    my $self = shift;
+    return $self->{caller};
+}
+
+sub action_chain {
+    my $self = shift;
+    return $self->{action_chain};
+}
+
+sub filter_chain {
+    my $self = shift;
+    return $self->{filter_chain};
+}
+
+sub builder_chain {
+    my $self = shift;
+    return $self->{builder_chain};
+}
+
+sub _action {
+    my ($self, $context) = @_;
+    $context->set(res => $self->app->($context));
+    return $context;
+}
+
+sub dsl {
+    my ($self, $key) = @_;
+    return $key ? $self->{dsl}{$key} : $self->{dsl};
+}
+
+sub _load_dsl {
+    my ($self, $context) = @_;
+    my $class = $self->caller_class;
+    no strict   qw/refs subs/;
+    no warnings qw/redefine/;
+    for my $plugin ( $self->loaded_plugins->as_array ) {
+        for my $dsl ($plugin->exports) {
+            *{$class.'::'.$dsl} = $plugin->$dsl($context);
+            $self->{dsl}{$dsl} = $plugin->$dsl($context);
         }
-        else {
-            [404, [], ['Not Found']];
-        }
-    };
-}
-
-sub json_res {
-    my $res  = shift;
-    my $json = Nephia::GlobalVars->get('json');
-    my $body = $json->encode( $res );
-    return [ 200,
-        [
-            'Content-type'           => 'application/json',
-            'X-Content-Type-Options' => 'nosniff',  ### For IE 9 or later. See http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2013-1297
-            'X-Frame-Options'        => 'DENY',     ### Suppress loading web-page into iframe. See http://blog.mozilla.org/security/2010/09/08/x-frame-options/
-            'Cache-Control'          => 'private',  ### no public cache
-        ],
-        [ $body ]
-    ];
-}
-
-sub render {
-    my $res     = shift;
-    my $charset = delete $res->{charset} || Nephia::GlobalVars->get('charset');
-    my $view    = Nephia::GlobalVars->get('view');
-    my $body    = $view->render( $res->{template}, $res );
-    return [ 200,
-        [ 'Content-type' => "text/html; charset=$charset" ],
-        [ Encode::encode( $charset, $body ) ]
-    ];
-}
-
-sub config (@) {
-    Nephia::GlobalVars->set(config => 
-        scalar @_ > 1 ? { @_ } :
-        ref $_[0] eq 'HASH' ? $_[0] :
-        do( $_[0] )
-    ) if scalar(@_) > 0;
-    return Nephia::GlobalVars->get('config');
-};
-
-sub nephia_plugins (@) {
-    goto do { Nephia::PluginLoader->can('load') };
-}
-
-sub base_dir {
-    my $proto = shift || caller;
-
-    $proto =~ s!::!/!g;
-    my $base_dir;
-    if (my $libpath = $INC{"$proto.pm"}) {
-        $libpath =~ s!\\!/!g; # for win32
-        $libpath =~ s!(?:blib/)?lib/+$proto\.pm$!!;
-        $base_dir = File::Spec->rel2abs($libpath || '.');
-    } else {
-        $base_dir = File::Spec->rel2abs('.');
     }
+}
 
-    no warnings 'redefine';
-    *Nephia::Core::base_dir = sub {
-        return $base_dir;
+sub run {
+    my ($self, %config) = @_;
+    my $class = $self->{caller};
+    my $app = sub {
+        my $env     = shift;
+        my $req     = Nephia::Request->new($env);
+        my $context = Nephia::Context->new(req => $req, config => {%config});
+        $self->_load_dsl($context);
+        my $res;
+        for my $action ($self->{action_chain}->as_array) {
+            ($context, $res) = $action->($self, $context);
+            last if $res;
+        }
+        $res ||= $context->get('res');
+        $res = Scalar::Util::blessed($res) ? $res : Nephia::Response->new(@$res);
+        for my $filter ($self->{filter_chain}->as_array) {
+            my $body = ref($res->body) eq 'ARRAY' ? $res->body->[0] : $res->body;
+            $res->body($filter->($self, $body));
+        }
+        return $res->finalize;
     };
-
-    return $base_dir;
+    for my $builder ($self->builder_chain->as_array) {
+        $app = $builder->($self, $app);
+    }
+    return $app;
 }
-
-sub set_cookie ($$){
-    my ($key, $val) = @_;
-    $CONTEXT->{cookie}{$key} = $val;
-}
-
-sub cookie ($) {
-    my $key = shift;
-    $CONTEXT->{cookie}{$key};
-}
-
-sub context { 
-    my ($key, $val) = @_;
-    $Nephia::Core::CONTEXT->{$key} = $val if defined $key && defined $val;
-    return defined $key ? $Nephia::Core::CONTEXT->{$key} : $Nephia::Core::CONTEXT;
-};
 
 1;
+
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+Nephia::Core - Core Class of Nephia
+
+=head1 DESCRIPTION
+
+Core Class of Nephia, Object Oriented Interface Included.
+
+=head1 SYNOPSIS
+
+    my $v = Nephia::Core->new( 
+        appname => 'YourApp::Web',
+        plugins => ['JSON', 'HashHandler' => { ... } ],
+    );
+    $v->app(sub {
+        my $req = req();
+        [200, [], 'Hello, World'];
+    });
+    $v->run;
+
+=head1 ATTRIBUTES
+
+=head2 appname
+
+Your Application Name. Default is caller class.
+
+=head2 plugins
+
+Nephia plugins you want to load.
+
+=head2 app
+
+Application as coderef.
+
+=head1 METHODS
+
+=head2 action_chain
+
+Returns a Nephia::Chain object for specifying order of actions.
+
+=head2 filter_chain
+
+Returns a Nephia::Chain object for specifying order of filters.
+
+=head2 builder_chain
+
+Returns a Nephia::Chain object for specifying order of builders.
+
+=head2 caller_class
+
+Returns caller class name as string.
+
+=head2 app
+
+Accessor method for application coderef (ignore plugins, actions, filters, and builders).
+
+=head2 export_dsl
+
+Export DSL (see dsl method) into caller namespace.
+
+=head2 loaded_plugins
+
+Returns objects of loaded plugins.
+
+=head2 dsl
+
+Returns pairs of name and coderef of DSL as hashref.
+
+=head2 run
+
+Returns an application as coderef (include plugins, actions, filters, and builders).
+
+If you specify some arguments, these will be stored as config into context.
+
+Look at following example. This psgi application returns 'Nephia is so good!'.
+
+    my $v = Nephia::Core->new(
+        app => sub {
+            my $c = shift;
+            [200, ['Content-Type' => 'text/plain'], ['Nephia is '.$c->{config}{message}]];
+        },
+    );
+    $v->run(message => 'so good!');
+    
+
+=head1 HOOK MECHANISM
+
+Nephia::Core includes hook mechanism itself. These provided as L<Nephia::Chain> object.
+
+Nephia::Core has action_chain, filter_chain, and builder_chain. 
+
+First, Look following ASCII Art Image.
+
+This AA presents relation of builder chain and application.
+
+          /----------------------------------------------\
+          |                                              |
+          |                           /---------------\  |
+          |                           |               |  |
+          |                           |   /~\   /~\   |  |
+          |                           |   |B|   |B|   |  |
+          |  +---------------+        |   |u|   |u|   |  |     |\   +----------+
+          |  |               |        |   |i|   |i|   |  |     | \  |          |
+          |  |            +---------------|l|---|l|------------+  \ |          |
+          |  | $v->run;   | application   |d|   |d|                \|   PSGI   |
+          |  |            |               |e|   |e|                 >          |
+          |  |            +---------------|r|---|r|------------+   /|    App.  |
+          |  |               |        |   | |   | |   |  |     |  / |          |
+          |  +---------------+        |   |1|   |2|   |  |     | /  |          |
+          |                           |   \_/   \_/   |  |     |/   +----------+
+          |  $v                       |               |  |
+          |  Nephia::Core obj.        | builder_chain |  |
+          |                           \---------------/  |
+          \----------------------------------------------/
+
+When execute run method of Nephia::Core instance, run method returns PSGI Application (coderef).
+
+Then, Builders in builder_chain modifies PSGI Application.
+
+Okay. Look following ASCII Art Image. 
+
+This AA presents relation of request, response, action chain, and filter chain.
+
+    
+        [HTTP Request]                              [HTTP Response]
+           |                                                   A
+   /-------|---------------------------------------------------|--------------\
+   |       |       Your Application                            |              |
+   |       |                                                   |              |
+   |       v                                                   |              |
+   |   /------------------------------------\    /---------------------\      |
+   |   |                                    |    |                     |      |
+   |   |           Nephia::Context          |--->|  Nephia::Response   |      |
+   |   |                                    |    |                     |      |
+   |   \------------------------------------/    \---------------------/      |
+   |       |  A    |  A     |   A    |  A           |           A             |
+   |       |  |    |  |     |   |    |  |        [Content]      |             |
+   |   /---|--|----|--|-----|---|----|--|--\   /----|-----------|--------\    |
+   |   |   |  |    |  |     |   |    |  |  |   |    |           |        |    |
+   |   |   |  |    |  |     |   |    |  |  |   |    |           |        |    |
+   |   |   v  |    v  |     v   |    v  |  |   |    v           |        |    |
+   |   |  /~\ |   /~\ |   /~~~\ |   /~\ |  |   |   /~\    /~\   |        |    |
+   |   |  |A| |   |A| |   | A | |   |A| |  |   |   |F|    |F|   |        |    |
+   |   |  |c|-/   |c|-/   | p |-/   |c|-/  |   |   |i|--->|i|---+        |    |
+   |   |  |t|     |t|     | p.|     |t|    |   |   |l|    |l|            |    |
+   |   |  |i|     |i|     |   |     |i|    |   |   |t|    |t|            |    |
+   |   |  |o|     |o|     \---/     |o|    |   |   |e|    |e|            |    |
+   |   |  |n|     |n|               |n|    |   |   |r|    |r|            |    |
+   |   |  | |     | |               | |    |   |   | |    | |            |    |
+   |   |  |1|     |2|               |3|    |   |   |1|    |2|            |    |
+   |   |  \_/     \_/               \_/    |   |   \_/    \_/            |    |
+   |   |                                   |   |                         |    |
+   |   | action_chain                      |   | filter_chain            |    |
+   |   \-----------------------------------/   \-------------------------/    |
+   \--------------------------------------------------------------------------/
+
+
+Actions (and App) in action_chain affects context. Then, Nephia::Response object creates from context. 
+
+Afterwords, filters in filter_chain affects content string in Nephia::Response.
+
+=head1 AUTHOR
+
+ytnobody E<lt>ytnobody@gmail.comE<gt>
+
+=head1 SEE ALSO
+
+L<Nephia::Chain>
+
+=cut

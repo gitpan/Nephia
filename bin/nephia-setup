@@ -1,56 +1,28 @@
 #!perl
-
 use strict;
 use warnings;
 use Nephia::Setup;
-use File::Spec;
 use Getopt::Long;
 
-my $flavor = 'Default';
-my $plugin = '';
-my @plugins = ();
+my $appname = shift(@ARGV);
+help() unless $appname;
 
-my $config = do File::Spec->catfile($ENV{HOME}, '.nephia-setup');
+my $plugins = 'Minimal';
 
-$flavor = join ',', @{$config->{flavor}} if defined $config->{flavor};
-@plugins = @{$config->{plugin}} if defined $config->{plugin};
-
-GetOptions(
-    "flavor=s" => \$flavor,
-    "plugin=s" => \$plugin,
-    "v|version"  => \&version,
+GetOptions (
+    "plugins=s" => \$plugins,
 );
 
-my $appname = shift @ARGV || '';
-help() unless $appname =~ /^\w+/;
-
-my @flavors = $flavor =~ /,/ ? split(/,/, $flavor) : ( $flavor );
-push @plugins, split /,/, $plugin;
-
-my $setup = Nephia::Setup->new(
-    flavor => [@flavors],
-    plugin => [@plugins],
-    appname => $appname,
-);
-$setup->create;
+my $setup = Nephia::Setup->new(appname => $appname, plugins => [split(/,/, $plugins)]);
+$setup->do_task;
 
 sub help {
-    print <<EOF;
+    my $data = join('', (<DATA>));
+    print $data."\n";
+    exit;
+}
+
+__DATA__
 Usage:
 
-to create new application,
-
-  nephia-setup AppName [--flavor Flavor::Name]
-
-show Nephia version,
-
-  nephia-setup --version
-
-EOF
-    exit;
-}
-
-sub version {
-    print 'Nephia ' . Nephia::Setup->get_version() . "\n";
-    exit;
-}
+ nephia-setup AppName [options]

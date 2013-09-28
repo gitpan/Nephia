@@ -1,10 +1,10 @@
 {
-   "abstract" : "Mini WAF",
+   "abstract" : "A mini-sized WAF that aimed to substitute for Nephia",
    "author" : [
-      "C<ytnobody> <ytnobody@gmail.com>"
+      "ytnobody <ytnobody@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v0.5.6",
+   "generated_by" : "Minilla/v0.6.5",
    "license" : "perl_5",
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -27,50 +27,47 @@
          "requires" : {
             "CPAN::Meta" : "0",
             "CPAN::Meta::Prereqs" : "0",
-            "Module::Build" : "0.38",
-            "perl" : "5.010001"
+            "Module::Build" : "0.38"
          }
       },
       "develop" : {
          "requires" : {
             "Test::CPAN::Meta" : "0",
             "Test::MinimumVersion" : "0.10108",
-            "Test::Perl::Critic" : "0",
             "Test::Pod" : "1.41",
             "Test::Spellunker" : "v0.2.7"
          }
       },
       "runtime" : {
-         "recommends" : {
-            "URL::Encode::XS" : "0"
-         },
          "requires" : {
+            "Archive::Extract" : "0",
             "Class::Accessor::Lite" : "0",
-            "Config::Micro" : "0.02",
-            "File::pushd" : "0",
-            "JSON" : "0",
+            "Data::Section::Simple" : "0",
+            "File::Fetch" : "0",
             "Module::Load" : "0",
             "Plack" : "0",
-            "Router::Simple" : "0",
-            "Text::MicroTemplate::File" : "0",
+            "Plack::Request::WithEncoding" : "0",
             "URL::Encode" : "0",
-            "parent" : "0"
+            "perl" : "5.008005"
          }
       },
       "test" : {
          "requires" : {
             "Capture::Tiny" : "0",
-            "File::Which" : "0",
-            "Guard" : "0",
-            "HTTP::Request::Common" : "0",
-            "Test::More" : "0.98"
+            "File::Temp" : "0",
+            "Test::Exception" : "0",
+            "Test::More" : "0.98",
+            "Test::WWW::Mechanize::PSGI" : "0"
          }
       }
    },
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.37"
+         "version" : "0.80"
+      },
+      "Nephia::Chain" : {
+         "file" : "lib/Nephia/Chain.pm"
       },
       "Nephia::Context" : {
          "file" : "lib/Nephia/Context.pm"
@@ -78,8 +75,8 @@
       "Nephia::Core" : {
          "file" : "lib/Nephia/Core.pm"
       },
-      "Nephia::GlobalVars" : {
-         "file" : "lib/Nephia/GlobalVars.pm"
+      "Nephia::Incognito" : {
+         "file" : "lib/Nephia/Incognito.pm"
       },
       "Nephia::MetaTemplate" : {
          "file" : "lib/Nephia/MetaTemplate.pm"
@@ -87,8 +84,11 @@
       "Nephia::Plugin" : {
          "file" : "lib/Nephia/Plugin.pm"
       },
-      "Nephia::PluginLoader" : {
-         "file" : "lib/Nephia/PluginLoader.pm"
+      "Nephia::Plugin::Basic" : {
+         "file" : "lib/Nephia/Plugin/Basic.pm"
+      },
+      "Nephia::Plugin::Cookie" : {
+         "file" : "lib/Nephia/Plugin/Cookie.pm"
       },
       "Nephia::Request" : {
          "file" : "lib/Nephia/Request.pm"
@@ -99,41 +99,26 @@
       "Nephia::Setup" : {
          "file" : "lib/Nephia/Setup.pm"
       },
-      "Nephia::Setup::Base" : {
-         "file" : "lib/Nephia/Setup/Base.pm"
+      "Nephia::Setup::Plugin" : {
+         "file" : "lib/Nephia/Setup/Plugin.pm"
       },
-      "Nephia::Setup::Default" : {
-         "file" : "lib/Nephia/Setup/Default.pm"
-      },
-      "Nephia::Setup::Git" : {
-         "file" : "lib/Nephia/Setup/Git.pm"
-      },
-      "Nephia::View" : {
-         "file" : "lib/Nephia/View.pm"
-      },
-      "Nephia::View::MicroTemplate" : {
-         "file" : "lib/Nephia/View/MicroTemplate.pm"
+      "Nephia::Setup::Plugin::Minimal" : {
+         "file" : "lib/Nephia/Setup/Plugin/Minimal.pm"
       }
    },
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/ytnobody/Nephia/issues"
+         "web" : "https://github.com/nephia/Nephia/issues"
       },
-      "homepage" : "https://github.com/ytnobody/Nephia",
+      "homepage" : "https://github.com/nephia/Nephia",
       "repository" : {
-         "url" : "git://github.com/ytnobody/Nephia.git",
-         "web" : "https://github.com/ytnobody/Nephia"
+         "url" : "git://github.com/nephia/Nephia.git",
+         "web" : "https://github.com/nephia/Nephia"
       }
    },
-   "version" : "0.37",
+   "version" : "0.80",
    "x_contributors" : [
-      "moznion <moznion@gmail.com>",
-      "ichigotake <k.wisiiy@gmail.com>",
-      "mackee <macopy123[attttt]gmai.com>",
-      "Masayuki Matsuki <y.songmu@gmail.com>",
-      "mackee <macopy123@gmail.com>",
-      "papix <mail@papix.net>",
-      "ytnobody / satoshi azuma <ytnobody@gmail.com>"
+      "papix <mail@papix.net>"
    ]
 }

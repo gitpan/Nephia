@@ -11,8 +11,8 @@ sub new {
     my ($class, %opts) = @_;
     $opts{tag}      ||= '<?= ... ?>';
     $opts{arrow}    ||= '}->{';
-    $opts{argument} ||= '$c->{...}';
-    $opts{replace_table} ||= [qr|^| => '? my $c = shift;'."\n"];
+    $opts{argument} ||= '$arg->{...}';
+    $opts{replace_table} ||= [qr|^| => '? my $arg = shift;'."\n"];
     bless +{%opts}, $class;
 }
 

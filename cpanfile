@@ -1,31 +1,18 @@
-requires 'Class::Accessor::Lite';
-requires 'File::pushd';
-requires 'JSON';
+requires 'perl', '5.008001';
 requires 'Plack';
-requires 'Router::Simple';
-requires 'Text::MicroTemplate::File';
-requires 'URL::Encode';
-requires 'parent';
+requires 'Plack::Request::WithEncoding';
 requires 'Module::Load';
-requires 'Config::Micro', '0.02'; ### Use in Nephia::Setup::Base. Keep gentleness for user :)
+requires 'Data::Section::Simple';
+requires 'URL::Encode';
+requires 'File::Fetch';
+requires 'Archive::Extract';
+requires 'Class::Accessor::Lite';
 
-recommends 'URL::Encode::XS';
-
-on configure => sub {
-    requires 'CPAN::Meta';
-    requires 'CPAN::Meta::Prereqs';
-    requires 'Module::Build';
-    requires 'perl', '5.010001';
-};
-
-on test => sub {
+on 'test' => sub {
+    requires 'Test::More', '0.98';
+    requires 'Test::Exception';
+    requires 'Test::WWW::Mechanize::PSGI';
+    requires 'File::Temp';
     requires 'Capture::Tiny';
-    requires 'Guard';
-    requires 'HTTP::Request::Common';
-    requires 'Test::More', "0.98";
-    requires 'File::Which';
 };
 
-on develop => sub {
-    requires 'Test::Perl::Critic';
-};

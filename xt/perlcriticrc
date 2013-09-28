@@ -1,6 +1,0 @@
-[TestingAndDebugging::ProhibitNoStrict]
-allow=refs subs
-
-[-Subroutines::ProhibitSubroutinePrototypes]
-
-[-ValuesAndExpressions::ProhibitLeadingZeros]

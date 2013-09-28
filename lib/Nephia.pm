@@ -1,351 +1,102 @@
 package Nephia;
+use 5.008005;
 use strict;
 use warnings;
-use File::Spec;
-our $VERSION = '0.37';
+use Nephia::Incognito;
 
-use Nephia::Core;
-use Module::Load ();
+our $VERSION = "0.80";
 
 sub import {
     my ($class, %opts) = @_;
-    my @plugins = ! $opts{plugins} ? () :
-                  ref($opts{plugins}) eq 'ARRAY' ? @{$opts{plugins}} :
-                  ( $opts{plugins} )
-    ;
+    my $caller = caller;
+    Nephia::Incognito->incognito(%opts, caller => $caller);
+}
 
-    Nephia::Core->export_to_level(1);
-
-    @_ = @plugins;
-    goto do { Nephia::Core->can('nephia_plugins') } if @plugins;
+sub run {
+    my $caller = caller;
+    Nephia::Incognito->unmask($caller)->run(@_);
 }
 
 1;
 __END__
 
-=encoding utf8
+=encoding utf-8
 
 =head1 NAME
 
-Nephia - Mini WAF
+Nephia - A mini-sized WAF that aimed to substitute for Nephia
 
 =head1 SYNOPSIS
 
-  ### Get started the Nephia!
-  $ nephia-setup MyApp
-
-  ### And, plackup it!
-  $ cd myapp
-  $ plackup
+    use Nephia plugins => [...];
+    app {
+        my $req  = req;         ### Request object
+        my $id   = param('id'); ### query-param that named "id" 
+        my $body = sprintf('ID is %s', $id);
+        [200, [], $body];
+    };
 
 =head1 DESCRIPTION
 
-Nephia is a mini web-application framework.
+Nephia is microcore architecture WAF. 
 
-B<This software is still alpha quality. Its API may change without notice.> 
+=head1 GETTING STARTED
 
-=head1 MOUNT A CONTROLLER
+Let's try to create your project.
 
-Use "path" function as following in lib/MyApp.pm .
+    nephia-setup YourApp::Web
 
-First argument is path for mount a controller. This must be string.
+Then, you may plackup on your project directory.
 
-Second argument is controller-logic. This must be code-reference.
+Please see L<Nephia::Setup::Plugin::Basic> for detail.
 
-In controller-logic, you may get Plack::Request object as first-argument,
-and controller-logic must return response-value as hash-reference or Nephia::Response object.
+=head1 BOOTSTRAP A MINIMALIST STRUCTURE
 
-=head2 Basic controller - Makes JSON response
+Use "--plugins Minimal" option to minimalistic setup.
 
-Look this examples.
+    nephia-setup --plugins Minimal YourApp::Mini
 
-  path '/foobar' => sub {
-      my ( $req ) = @_;
-      # Yet another syntax is following.
-      # my $req = req;
+Please see L<Nephia::Setup::Plugin::Minimal> for detail.
 
-      return {
-          name => 'MyApp',
-          query => param('q'),
-      };
-  };
+=head1 LOAD OPTIONS 
 
-This controller outputs response-value as JSON, and will be mounted on "/foobar".
+Please see L<Nephia::Core>.
 
-=head2 Use templates - Render with Text::MicroTemplate
+=head1 DSL
 
-  path '/' => sub {
-      return {
-          template => 'index.html',
-          title => 'Welcome to my homepage!',
-      };
-  };
+=head2 app
 
-Attention to "template" attribute.
-If you specified it, controller searches template file from view-directory and render it.
+    app { ... };
 
-If you use multibyte-string in response, please remember C<use utf8> and, you may specify character-set as like as following.
+Specify code-block of your webapp.
 
-  use utf8; ### <- very important
-  path '/' => sub {
-      return {
-          template => 'mytemplate.tx',
-          title => 'わたしのホォムペェジへよおこそ！',
-          charset => 'Shift_JIS',
-      };
-  };
+=head2 other two basic DSL
 
-If you not specified C<charset>, it will be 'UTF-8'.
+Please see L<Nephia::Plugin::Basic>.
 
-=head2 Makes response - Using "res" function
+=head2 dispatcher DSL
 
-  path '/my-javascript' => sub {
-      return res {
-          content_type( 'text/javascript' );
-          body( 'alert("Oreore!");' );
-      };
-  };
+Please see L<Nephia::Plugin::Dispatch>.
 
-"res" function returns Nephia::Response object with some DSL.
+=head1 EXPORTS
 
-You may specify code-reference that's passed to res() returns some value. These values are passed into arrayref that is as plack response.
+=head2 run
 
-  path '/some/path' => sub {
-      res { ( 200, ['text/html; charset=utf8'], ['Wooootheee!!!'] ) };
-  };
+In app.psgi, run() method returns your webapp as coderef.
 
-And, you can write like following.
-
-  path '/cond/sample' => sub {
-      return res { 404 } unless param('q');
-      return res { ( 200, [], ['you say '. param('q')] ) };
-  };
-
-Commands supported in "res" function are following.
-
-=over 4
-
-=item status
-
-=item headers
-
-=item header
-
-=item body
-
-=item content_type
-
-=item content_length
-
-=item content_encoding
-
-=item redirect
-
-=item cookies
-
-=back
-
-Please see Plack::Response's documentation for more detail.
-
-=head2 Limitation by request method - Using (get|post|put|del) function
-
-  ### catch request that contains get-method
-  get '/foo' => sub { ... };
-
-  ### post-method is following too.
-  post '/bar' => sub { ... };
-
-  ### put-method and delete-method are too.
-  put '/baz' => sub { ... };
-  del '/hoge' => sub { ... };
-
-=head2 How to use routing with Router::Simple style matching-pattern and capture it - Using path_param function
-
-  post '/item/{id:[0-9]+}' => sub {
-      my $item_id = path_param->{id}; # get param named "id" from path
-      ...
-  };
-
-=head2 Submapping to other applications that use Nephia
-
-It's easy. Call "path" function by package instead of a coderef.
-
-  package MyApp;
-  use Nephia;
-
-  path '/childapp' => 'ChildApp';
-
-in MyApp/ChildApp.pm:
-
-  package MyApp::ChildApp;
-  use Nephia;
-
-  get '/message' => sub {
-      message => 'this is child app!'
-  };
-
-This controller mapped to "/childapp/message".
-
-Can use "+" prefix in package name. This syntax feature is to use absolute package name.
-
-Example:
-
-  package MyApp;
-
-  path '/otherapp' => '+OtherApp';
-
-"/otherapp" connect to "OtherApp".
-
-Support to multiple path to SubApp.
-
-Example:
-
-  package MyApp;
-
-  path '/subapp1' => 'SubApp';
-  path '/subapp2' => 'SubApp';
-
-The MyApp::SubApp connected to "/subapp1" and "/subapp2".
-
-=head2 Using Cookie
-
-If you want to set cookie, use "set_cookie" command.
-
-  path '/somepath' => sub {
-      set_cookie cookiename => 'cookievalue';
-      return +{ ... };
-  };
-
-And, getting a cookie value, use "cookie" command.
-
-  path '/anypath' => sub {
-      my $cookie_value = cookie 'cookiename';
-      return +{ ... };
-  };
-
-=head1 USING CONFIG
-
-First, see app.psgi that generated by C<nephia-setup>.
-
-  use strict;
-  use warnings;
-  use FindBin;
-
-  use lib ("$FindBin::Bin/lib", "$FindBin::Bin/extlib/lib/perl5");
-  use MyApp;
-  MyApp->run;
-
-You may define config with run method as like as following.
-
-  MyApp->run(
-    attr1   => 'value',
-    logpath => '/path/to/log',
-    ...
-  );
-
-And, you can access to these config in your application as following.
-
-  path '/foo/bar' => sub {
-    my $config = config;
-  };
-
-=head1 STATIC CONTENTS ( like as image, javascript ... )
-
-You can look static-files that is into root directory via HTTP.
-
-=head1 PLUGINS
-
-You may use plugins for Nephia.
-
-See L<Nephia::Plugin> for more detail about plugin.
-
-=head1 FUNCTIONS
-
-=head2 path $path, $coderef_as_controller;
-
-Mount controller on specified path.
-
-=head2 get post put del
-
-Usage equal as path(). But these functions specifies limitation for HTTP request-method.
-
-=head2 req
-
-Return Plack::Request object. You can call this function in code-reference that is argument of path().
-
-=head2 res $coderef
-
-Return Nephia::Response object with some DSL.
-
-=head2 param 
-
-Return query-parameters that contains in path as hashref. (As like as "req->parameters")
-
-=head2 param $param_name
-
-Return specified query-parameter. (As like as "req->param($param_name)")
-
-=head2 path_param
-
-Return parameters as hashref that captured by Router::Simple.
-
-=head2 path_param $keyname
-
-Return specified parameter that captured by Router::Simple.
-
-=head2 nip / nip $keyname
-
-Alias for path_param.
-
-NOTE: Need more clever name for this function.
-
-=head2 config
-
-Return config as hashref.
-
-=head2 base_dir
-
-Return the absolute path to root of application.
-
-=head2 cookie $cookie_name
-
-Get specified cookie value.
-
-=head2 set_cookie $cookie_name => $cookie_value
-
-Set value into specified cookie.
-
-=head2 nephia_plugins @plugins
-
-Load specified Nephia plugins.
-
-=head1 AUTHOR
-
-C<ytnobody> E<lt>ytnobody@gmail.comE<gt>
-
-C<ichigotake>
-
-C<papix>
-
-and Nephia contributors, hachioji.pm
-
-=head1 SEE ALSO
-
-L<Plack::Request>
-
-L<Plack::Response>
-
-L<Plack::Builder>
-
-L<Text::MicroTemplate>
-
-L<JSON>
-
-L<Nephia Home Page|http://nephia.github.io/>
+    use YourApp::Web;
+    YourApp::Web->run;
 
 =head1 LICENSE
+
+Copyright (C) ytnobody.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
+=head1 AUTHOR
+
+ytnobody E<lt>ytnobody@gmail.comE<gt>
+
 =cut
+

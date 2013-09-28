@@ -1,2 +1,0 @@
-use MyApp;
-MyApp->run();
