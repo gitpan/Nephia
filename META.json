@@ -64,7 +64,7 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.81"
+         "version" : "0.82"
       },
       "Nephia::Chain" : {
          "file" : "lib/Nephia/Chain.pm"
@@ -117,7 +117,7 @@
          "web" : "https://github.com/nephia/Nephia"
       }
    },
-   "version" : "0.81",
+   "version" : "0.82",
    "x_contributors" : [
       "papix <mail@papix.net>"
    ]
