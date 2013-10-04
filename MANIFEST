@@ -28,6 +28,7 @@ t/model/004_core.t
 t/model/005_incognito.t
 t/model/008_meta_template.t
 t/model/010_plugin.t
+t/model/011_redirect.t
 t/model/050_setup_core.t
 t/model/051_setup_plugin.t
 t/psgi/010_core.t
