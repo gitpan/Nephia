@@ -4,12 +4,18 @@ use strict;
 use warnings;
 use Nephia::Incognito;
 
-our $VERSION = "0.83";
+our $VERSION = "0.84";
 
 sub import {
     my ($class, %opts) = @_;
     my $caller = caller;
     Nephia::Incognito->incognito(%opts, caller => $caller);
+}
+
+sub call {
+    my ($class, $codepath) = @_;
+    my $caller = caller;
+    Nephia::Incognito->unmask($caller)->call($codepath);
 }
 
 sub run {
@@ -86,6 +92,14 @@ In app.psgi, run() method returns your webapp as coderef.
 
     use YourApp::Web;
     YourApp::Web->run;
+
+=head1 CLASS METHOD
+
+=head2 call
+
+Returns external logic as coderef.
+
+    my $external_logic = Nephia->call('C::Root#index');
 
 =head1 LICENSE
 

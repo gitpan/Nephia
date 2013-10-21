@@ -7,6 +7,7 @@ bin/nephia-setup
 cpanfile
 lib/Nephia.pm
 lib/Nephia/Chain.pm
+lib/Nephia/Container.pm
 lib/Nephia/Context.pm
 lib/Nephia/Core.pm
 lib/Nephia/Incognito.pm
@@ -29,11 +30,13 @@ t/model/005_incognito.t
 t/model/008_meta_template.t
 t/model/010_plugin.t
 t/model/011_redirect.t
+t/model/021_call.t
 t/model/050_setup_core.t
 t/model/051_setup_plugin.t
 t/psgi/010_core.t
 t/psgi/010_incognito.t
 t/psgi/021_cookie.t
+t/psgi/022_call.t
 t/psgi/050_plugin_hook.t
 t/psgi/tmpl/foo.html
 META.yml

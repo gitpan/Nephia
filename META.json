@@ -64,10 +64,13 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.83"
+         "version" : "0.84"
       },
       "Nephia::Chain" : {
          "file" : "lib/Nephia/Chain.pm"
+      },
+      "Nephia::Container" : {
+         "file" : "lib/Nephia/Container.pm"
       },
       "Nephia::Context" : {
          "file" : "lib/Nephia/Context.pm"
@@ -117,7 +120,7 @@
          "web" : "https://github.com/nephia/Nephia"
       }
    },
-   "version" : "0.83",
+   "version" : "0.84",
    "x_contributors" : [
       "papix <mail@papix.net>"
    ]

@@ -31,9 +31,11 @@ no_index:
 provides:
   Nephia:
     file: lib/Nephia.pm
-    version: 0.83
+    version: 0.84
   Nephia::Chain:
     file: lib/Nephia/Chain.pm
+  Nephia::Container:
+    file: lib/Nephia/Container.pm
   Nephia::Context:
     file: lib/Nephia/Context.pm
   Nephia::Core:
@@ -72,6 +74,6 @@ resources:
   bugtracker: https://github.com/nephia/Nephia/issues
   homepage: https://github.com/nephia/Nephia
   repository: git://github.com/nephia/Nephia.git
-version: 0.83
+version: 0.84
 x_contributors:
   - 'papix <mail@papix.net>'
