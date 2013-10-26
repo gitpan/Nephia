@@ -1,5 +1,5 @@
 {
-   "abstract" : "A mini-sized WAF that aimed to substitute for Nephia",
+   "abstract" : "A microcore architecture WAF",
    "author" : [
       "ytnobody <ytnobody@gmail.com>"
    ],
@@ -64,13 +64,10 @@
    "provides" : {
       "Nephia" : {
          "file" : "lib/Nephia.pm",
-         "version" : "0.84"
+         "version" : "0.85"
       },
       "Nephia::Chain" : {
          "file" : "lib/Nephia/Chain.pm"
-      },
-      "Nephia::Container" : {
-         "file" : "lib/Nephia/Container.pm"
       },
       "Nephia::Context" : {
          "file" : "lib/Nephia/Context.pm"
@@ -120,7 +117,7 @@
          "web" : "https://github.com/nephia/Nephia"
       }
    },
-   "version" : "0.84",
+   "version" : "0.85",
    "x_contributors" : [
       "papix <mail@papix.net>"
    ]

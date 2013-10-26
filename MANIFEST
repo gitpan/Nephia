@@ -7,7 +7,6 @@ bin/nephia-setup
 cpanfile
 lib/Nephia.pm
 lib/Nephia/Chain.pm
-lib/Nephia/Container.pm
 lib/Nephia/Context.pm
 lib/Nephia/Core.pm
 lib/Nephia/Incognito.pm

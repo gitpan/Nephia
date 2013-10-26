@@ -5,9 +5,17 @@ use Nephia::Request;
 use Nephia::Response;
 use Nephia::Context;
 use Nephia::Chain;
-use Nephia::Container;
 use Scalar::Util ();
 use Module::Load ();
+
+our $AUTOLOAD;
+
+sub AUTOLOAD {
+    my $self = shift;
+    my ($class, $method) = $AUTOLOAD =~ /^(.+)::(.+?)$/;
+    return if $method =~ /^[A-Z]/;
+    $self->{dsl}{$method}->(@_);
+}
 
 sub new {
     my ($class, %opts) = @_;
@@ -67,7 +75,8 @@ sub _load_plugin {
 }
 
 sub app {
-    my $self = shift;
+    my ($self, $code) = @_;
+    $self->{app} = $code if defined $code;
     return $self->{app};
 }
 
@@ -93,19 +102,13 @@ sub builder_chain {
 
 sub _action {
     my ($self, $context) = @_;
-    $context->set(res => $self->app->($context));
+    $context->set(res => $self->app->($self, $context));
     return $context;
 }
 
 sub dsl {
     my ($self, $key) = @_;
     return $key ? $self->{dsl}{$key} : $self->{dsl};
-}
-
-sub container {
-    my $self = shift;
-    $self->{container} ||= Nephia::Container->new(core => $self);
-    $self->{container};
 }
 
 sub call {
@@ -117,13 +120,7 @@ sub call {
         Module::Load::load($class) unless $class->isa($class);
         $self->{external_classes}{$class} = 1;
     }
-    my $code = $class->can($method);
-    sub {
-        my $context = shift;
-        $self->_load_dsl($context);
-        my $container = $self->container;
-        $code->($container, $context);
-    };
+    $class->can($method);
 }
 
 sub _load_dsl {
